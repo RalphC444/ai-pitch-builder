@@ -1,0 +1,64 @@
+const WebSocket = require(process.argv[2]);
+const http = require('http'); const fs = require('fs');
+const [outDir, W, H] = [process.argv[3], +process.argv[4], +process.argv[5]];
+const getJSON = (u) => new Promise((res, rej) => http.get(u, r => { let d=''; r.on('data', c => d += c); r.on('end', () => res(JSON.parse(d))); }).on('error', rej));
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+(async () => {
+  const page = (await getJSON('http://127.0.0.1:9333/json')).find(t => t.type === 'page');
+  const ws = new WebSocket(page.webSocketDebuggerUrl); await new Promise(r => ws.on('open', r));
+  let id = 0; const pending = {}; const errors = [];
+  ws.on('message', m => { const msg = JSON.parse(m); if (msg.id && pending[msg.id]) { pending[msg.id](msg); delete pending[msg.id]; }
+    if (msg.method === 'Runtime.exceptionThrown') errors.push('EXC ' + msg.params.exceptionDetails.exception?.description?.split('\n')[0]);
+    if (msg.method === 'Runtime.consoleAPICalled' && ['error','warning'].includes(msg.params.type)) errors.push(msg.params.type + ' ' + msg.params.args.map(a => a.value || a.description || '').join(' ').slice(0, 300)); });
+  const send = (method, params = {}) => new Promise(r => { const i = ++id; pending[i] = r; ws.send(JSON.stringify({ id: i, method, params })); });
+  const ev = async (e) => (await send('Runtime.evaluate', { expression: e, returnByValue: true })).result?.result?.value;
+  const shot = async (n, full) => {
+    if (full) { const h = await ev('document.documentElement.scrollHeight'); await send('Emulation.setDeviceMetricsOverride', { width: W, height: Math.min(h, 6000), deviceScaleFactor: 1, mobile: W < 640 }); await sleep(300); }
+    const r = await send('Page.captureScreenshot', { format: 'png' }); fs.writeFileSync(`${outDir}/${W}-${n}.png`, Buffer.from(r.result.data, 'base64'));
+    if (full) { await send('Emulation.setDeviceMetricsOverride', { width: W, height: H, deviceScaleFactor: 1, mobile: W < 640 }); await sleep(200); }
+  };
+  const clickText = (t) => ev(`(() => { const b = [...document.querySelectorAll('button')].find(b => b.textContent.trim().startsWith(${JSON.stringify(t)})); if (!b) return 'missing ' + ${JSON.stringify(t)}; b.click(); return 'ok'; })()`);
+  const h1 = () => ev(`document.querySelector('main h1')?.textContent`);
+  const ctas = () => ev(`[...document.querySelectorAll('#nav-step-actions button')].map(b => b.textContent.trim()).join(' / ')`);
+  await send('Page.navigate', { url: 'about:blank' }); await sleep(300);
+  await send('Runtime.enable');
+  await send('Emulation.setDeviceMetricsOverride', { width: W, height: H, deviceScaleFactor: 1, mobile: W < 640 });
+  await send('Page.navigate', { url: 'http://localhost:3000' }); await sleep(1800);
+  await ev(`document.querySelector('button[aria-label="Send selected advisors to Pitch Curation"]').click()`); await sleep(1200);
+  console.log('curate nav ctas:', await ctas());
+  await shot('n1-curate');
+  await ev(`document.querySelector('#nav-step-actions button').click()`); await sleep(900);
+  console.log('landed:', await h1(), '| ctas:', await ctas(), '| overflow', await ev(`document.documentElement.scrollWidth + '/' + innerWidth`));
+  await shot('r1-preview', true);
+  await ev(`[...document.querySelectorAll('button[aria-expanded]')].find(b => b.textContent.includes('GLP-1'))?.click()`); await sleep(300);
+  console.log('thread open:', await ev(`[...document.querySelectorAll('button[aria-expanded]')].find(b => b.textContent.includes('GLP-1'))?.getAttribute('aria-expanded')`));
+  await shot('n2-preview');
+  await send('Browser.grantPermissions', { origin: 'http://localhost:3000', permissions: ['clipboardReadWrite', 'clipboardSanitizedWrite'] });
+  await send('Page.bringToFront');
+  await ev(`document.querySelector('button[aria-label="Copy email"]').click()`); await sleep(500);
+  console.log('copy button now:', await ev(`document.querySelector('button[aria-label="Email copied"]') ? 'copied state' : 'not copied'`));
+  console.log('clipboard text:', JSON.stringify((await (await send('Runtime.evaluate', { expression: 'navigator.clipboard.readText()', awaitPromise: true, returnByValue: true })).result?.result?.value || '').slice(0, 140)));
+  console.log('body max width:', await ev(`getComputedStyle(document.querySelector('[aria-label="Email preview"] .pitch-content').closest('[style*="max-width"]')).maxWidth`));
+  await ev(`window.scrollTo(0, 900)`); await sleep(300);
+  console.log('copy btn top after scroll:', await ev(`Math.round(document.querySelector('button[aria-label="Email copied"], button[aria-label="Copy email"]').getBoundingClientRect().top)`));
+  await shot('n2b-scrolled');
+  await ev(`window.scrollTo(0, 0)`); await sleep(200);
+  await ev(`document.querySelector('#nav-step-actions button').click()`); await sleep(600);
+  console.log('after edit:', await h1(), '| ctas:', await ctas(), '| has intro editor', await ev(`!!document.querySelector('[aria-label="Introduction"]')`));
+  await shot('r2-edit');
+  await ev(`document.querySelector('#nav-step-actions button').click()`); await sleep(500);
+  console.log('after preview:', await h1());
+  await ev(`document.querySelector('#nav-step-actions button').click()`); await sleep(400);
+  await ev(`document.querySelector('button[aria-label="Back to email preview"]')?.click()`); await sleep(400);
+  console.log('back arrow ->', await h1());
+  await ev(`[...document.querySelectorAll('#nav-step-actions button')].pop().click()`); await sleep(800);
+  console.log('after send:', await h1(), '| ctas:', await ctas());
+  await shot('n3-sent');
+  await ev(`[...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Failed').click()`); await sleep(300);
+  console.log('failed:', await h1(), '| ctas:', await ctas());
+  await shot('n4-failed');
+  await ev(`[...document.querySelectorAll('#nav-step-actions button')].pop().click()`); await sleep(300);
+  console.log('after try again:', await h1());
+  console.log('ERRORS:', errors.length ? '\n  ' + [...new Set(errors)].join('\n  ') : 'none');
+  ws.close();
+})().catch(e => { console.error(e); process.exit(1); });

@@ -1,0 +1,48 @@
+import React, { useId } from 'react';
+
+interface SaveIconProps {
+  className?: string;
+  style?: React.CSSProperties;
+}
+
+/**
+ * SaveIcon Component
+ * 
+ * Save/check icon SVG for profile card actions.
+ */
+export const SaveIcon: React.FC<SaveIconProps> = ({
+  className = '',
+  style,
+}) => {
+  const maskId = useId();
+  const fillColor = style?.color || 'rgba(0, 0, 0, 0.64)';
+  
+  return (
+    <svg 
+      width="24" 
+      height="24" 
+      viewBox="0 0 24 24" 
+      fill="none" 
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      style={style}
+      aria-hidden="true"
+    >
+      <mask id={maskId} style={{maskType: 'alpha'}} maskUnits="userSpaceOnUse" x="0" y="0" width="24" height="24">
+        <rect x="0" y="0" width="24" height="24" fill="#D9D9D9"/>
+      </mask>
+      <mask id={maskId} style={{maskType: 'alpha'}} maskUnits="userSpaceOnUse" x="2" y="2" width="20" height="20">
+        <rect x="2" y="2" width="20" height="20" fill="#D9D9D9"/>
+      </mask>
+      <g mask={`url(#${maskId})`}>
+        <path 
+          d="M21.1875 7.04464V19.2589C21.1875 19.7893 20.9987 20.2433 20.621 20.621C20.2433 20.9987 19.7893 21.1875 19.2589 21.1875H5.11607C4.58571 21.1875 4.1317 20.9987 3.75402 20.621C3.37634 20.2433 3.1875 19.7893 3.1875 19.2589V5.11607C3.1875 4.58571 3.37634 4.1317 3.75402 3.75402C4.1317 3.37634 4.58571 3.1875 5.11607 3.1875H17.3304L21.1875 7.04464ZM19.2589 7.84821L16.5268 5.11607H5.11607V19.2589H19.2589V7.84821ZM12.1875 18.2946C12.9911 18.2946 13.6741 18.0134 14.2366 17.4509C14.7991 16.8884 15.0804 16.2054 15.0804 15.4018C15.0804 14.5982 14.7991 13.9152 14.2366 13.3527C13.6741 12.7902 12.9911 12.5089 12.1875 12.5089C11.3839 12.5089 10.7009 12.7902 10.1384 13.3527C9.57589 13.9152 9.29464 14.5982 9.29464 15.4018C9.29464 16.2054 9.57589 16.8884 10.1384 17.4509C10.7009 18.0134 11.3839 18.2946 12.1875 18.2946ZM6.40179 10.2589H15.4018V6.40179H6.40179V10.2589Z" 
+          fill={fillColor}
+        />
+      </g>
+    </svg>
+  );
+};
+
+export default SaveIcon;
+

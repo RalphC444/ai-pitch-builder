@@ -1,0 +1,45 @@
+import React, { useId } from 'react';
+
+interface TranslationIconProps {
+  className?: string;
+  style?: React.CSSProperties;
+}
+
+/**
+ * TranslationIcon Component
+ * 
+ * Translation icon SVG from Figma design.
+ */
+export const TranslationIcon: React.FC<TranslationIconProps> = ({
+  className = '',
+  style,
+}) => {
+  const maskId = useId();
+  const fillColor = style?.color || 'rgba(0, 0, 0, 0.64)';
+  
+  return (
+    <svg 
+      width="20" 
+      height="20" 
+      viewBox="0 0 20 20" 
+      fill="none" 
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      style={style}
+      aria-hidden="true"
+    >
+      <mask id={maskId} style={{maskType: 'alpha'}} maskUnits="userSpaceOnUse" x="0" y="0" width="20" height="20">
+        <rect width="20" height="20" fill="#D9D9D9"/>
+      </mask>
+      <g mask={`url(#${maskId})`}>
+        <path 
+          d="M10.1667 18L13.7292 8.5H15.4375L19 18H17.3542L16.5 15.5625H12.6667L11.8125 18H10.1667ZM3.52083 15.5L2.47917 14.4375L6.47917 10.4792C5.97917 9.95139 5.51389 9.40278 5.08333 8.83333C4.65278 8.26389 4.27778 7.64583 3.95833 6.97917H5.66667C5.91667 7.42361 6.16667 7.80208 6.41667 8.11458C6.66667 8.42708 7.02778 8.84722 7.5 9.375C8.02778 8.79167 8.51389 8.18403 8.95833 7.55208C9.40278 6.92014 9.76389 6.23611 10.0417 5.5H1V4H6.75V2H8.25V4H14V5.5H11.625C11.3333 6.45833 10.9097 7.34375 10.3542 8.15625C9.79861 8.96875 9.1875 9.74306 8.52083 10.4792L10.4167 12.3542L9.83333 13.8958L7.5 11.5625L3.52083 15.5ZM13.1667 14.1875H16L14.625 10.25L13.1667 14.1875Z" 
+          fill={fillColor}
+        />
+      </g>
+    </svg>
+  );
+};
+
+export default TranslationIcon;
+

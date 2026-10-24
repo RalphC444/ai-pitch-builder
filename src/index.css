@@ -1,0 +1,641 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Import Quill's bubble theme styles */
+@import 'react-quill/dist/quill.bubble.css';
+
+body {
+  margin: 0;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Global styles to ensure Quill tooltips can overflow all containers */
+/* Keep Quill's default positioning but ensure overflow is allowed */
+/* FULLY ROUNDED toolbar (pill shape) - SINGLE ROW */
+.ql-bubble .ql-tooltip {
+  z-index: 9999 !important;
+  overflow: visible !important;
+  clip: unset !important;
+  clip-path: none !important;
+  contain: none !important;
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+  background-color: #ffffff !important;
+  border: 1px solid #d6d6d6 !important;
+  border-radius: 80px !important; /* Rounded pill shape matching Figma */
+  padding: 4px !important;
+  box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25) !important; /* Shadow from Figma */
+  pointer-events: auto !important; /* Ensure clicks work */
+  gap: 0 !important;
+  width: auto !important;
+  max-width: none !important;
+  white-space: nowrap !important;
+}
+
+/* Phones: the single-row toolbar is wider than the screen - cap it and let it scroll sideways */
+@media (max-width: 639px) {
+  .ql-bubble .ql-tooltip {
+    max-width: calc(100vw - 32px) !important;
+    overflow-x: auto !important;
+    scrollbar-width: none;
+  }
+}
+
+/* Force all direct children of tooltip to be inline */
+.ql-bubble .ql-tooltip > * {
+  flex-shrink: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+}
+
+/* HIDE the tooltip arrow completely - it shows as "j" character */
+.ql-bubble .ql-tooltip .ql-tooltip-arrow,
+.ql-bubble .ql-tooltip-arrow {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  width: 0 !important;
+  height: 0 !important;
+  border: none !important;
+  pointer-events: none !important;
+}
+
+/* Link input editing mode - ensure visible and styled */
+.ql-bubble .ql-tooltip.ql-editing {
+  z-index: 9999 !important;
+  overflow: visible !important;
+  clip: unset !important;
+  clip-path: none !important;
+  contain: none !important;
+  background-color: #ffffff !important;
+  border: 1px solid #ebebeb !important;
+  border-radius: 1000px !important; /* Fully rounded */
+  padding: 4px 12px !important;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.08) !important;
+}
+
+/* Link input text field - BLACK text */
+.ql-bubble .ql-tooltip.ql-editing input[type="text"] {
+  color: #000000 !important;
+  background: transparent !important;
+  border: none !important;
+  outline: none !important;
+  font-family: 'Poppins', sans-serif !important;
+  font-size: 14px !important;
+  padding: 4px 8px !important;
+}
+
+/* Link input placeholder */
+.ql-bubble .ql-tooltip.ql-editing input[type="text"]::placeholder {
+  color: rgba(0, 0, 0, 0.4) !important;
+}
+
+/* Tooltip editor container - HIDE when not editing */
+.ql-bubble .ql-tooltip .ql-tooltip-editor {
+  display: none !important;
+}
+
+/* Show tooltip editor only when in editing mode */
+.ql-bubble .ql-tooltip.ql-editing .ql-tooltip-editor {
+  display: flex !important;
+  align-items: center !important;
+  overflow: visible !important;
+  clip: unset !important;
+  clip-path: none !important;
+}
+
+/* Close button in link editor */
+.ql-bubble .ql-tooltip .ql-tooltip-editor a.ql-close {
+  color: #000000 !important;
+  font-size: 14px !important;
+  padding: 4px 8px !important;
+}
+
+/* Ensure all toolbar buttons are in one horizontal row */
+.ql-bubble .ql-tooltip .ql-formats {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+  gap: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  float: none !important;
+  flex-shrink: 0 !important;
+}
+
+/* Ensure custom buttons container is inline */
+.ql-bubble .ql-tooltip .custom-toolbar-buttons {
+  display: inline-flex !important;
+  flex-direction: row !important;
+  align-items: center !important;
+  flex-wrap: nowrap !important;
+  flex-shrink: 0 !important;
+  overflow: visible !important;
+}
+
+/* Hide custom buttons when link menu is open (editing mode) */
+.ql-bubble .ql-tooltip.ql-editing .custom-toolbar-buttons {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Override Quill's default button styles completely */
+.ql-bubble .ql-tooltip .ql-formats button {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  padding: 8px !important;
+  border-radius: 1000px !important; /* Fully rounded button backgrounds */
+  cursor: pointer !important;
+  transition: background-color 0.2s ease !important;
+  font-family: 'Poppins', sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 500 !important;
+  width: 40px !important;
+  height: 40px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  margin: 0 !important;
+  line-height: 1 !important;
+  pointer-events: auto !important; /* Ensure clicks work */
+  position: relative !important;
+  z-index: 1 !important;
+  flex-shrink: 0 !important;
+}
+
+/* ALL toolbar button SVG paths - default state: black with 64% opacity */
+.ql-bubble .ql-tooltip .ql-formats button svg path {
+  fill: rgba(0, 0, 0, 0.64) !important;
+  fill-opacity: 1 !important;
+}
+
+/* Hover state - light gray background, keep BLACK icon */
+.ql-bubble .ql-tooltip .ql-formats button:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+  color: #000000 !important;
+}
+
+/* Active state - blue-600 background tint, blue-600 icon */
+.ql-bubble .ql-tooltip .ql-formats button.ql-active {
+  background-color: rgba(0, 130, 235, 0.08) !important;
+  color: #0082EB !important;
+}
+
+/* Active hover state */
+.ql-bubble .ql-tooltip .ql-formats button.ql-active:hover {
+  background-color: rgba(0, 130, 235, 0.12) !important;
+  color: #0082EB !important;
+}
+
+/* Override SVG icon colors - Quill uses .ql-stroke (stroke) and .ql-fill (fill) classes */
+/* Default state: BLACK icons with 64% opacity */
+.ql-bubble .ql-tooltip .ql-formats button svg {
+  width: 24px !important;
+  height: 24px !important;
+}
+
+
+/* Hover state: black 100% opacity */
+.ql-bubble .ql-tooltip .ql-formats button:hover svg,
+.ql-bubble .ql-tooltip .ql-formats button:hover svg path {
+  color: #000000 !important;
+  fill: #000000 !important;
+}
+
+/* Active state: blue-600 */
+.ql-bubble .ql-tooltip .ql-formats button.ql-active svg,
+.ql-bubble .ql-tooltip .ql-formats button.ql-active svg path {
+  color: #0082EB !important;
+  fill: #0082EB !important;
+}
+
+/* Active hover state for background button */
+.ql-bubble .ql-tooltip .ql-formats button.ql-background.ql-active:hover {
+  background-color: rgba(0, 130, 235, 0.12) !important;
+}
+
+/* Hide Quill's background color picker dropdown menu */
+.ql-bubble .ql-picker.ql-background,
+.ql-bubble .ql-picker.ql-background .ql-picker-label,
+.ql-bubble .ql-picker.ql-background .ql-picker-options {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Make background button behave like other toggle buttons */
+.ql-bubble .ql-tooltip .ql-formats button.ql-background {
+  position: relative !important;
+}
+
+/* Hide any color picker dropdowns */
+.ql-bubble .ql-picker {
+  display: none !important;
+}
+
+/* Show only the background button, not the picker */
+.ql-bubble .ql-tooltip .ql-formats button.ql-background {
+  display: inline-flex !important;
+}
+
+/* Hover state: BLACK icons with 100% opacity (fully visible) */
+.ql-bubble .ql-tooltip .ql-formats button:hover .ql-stroke {
+  stroke: #000000 !important;
+}
+
+.ql-bubble .ql-tooltip .ql-formats button:hover .ql-fill {
+  fill: #000000 !important;
+}
+
+.ql-bubble .ql-tooltip .ql-formats button:hover svg {
+  color: #000000 !important;
+}
+
+.ql-bubble .ql-tooltip .ql-formats button:hover svg path {
+  fill: #000000 !important;
+}
+
+/* Active state: BLUE-600 icons (#0082EB) */
+.ql-bubble .ql-tooltip .ql-formats button.ql-active .ql-stroke {
+  stroke: #0082EB !important;
+}
+
+.ql-bubble .ql-tooltip .ql-formats button.ql-active .ql-fill {
+  fill: #0082EB !important;
+}
+
+.ql-bubble .ql-tooltip .ql-formats button.ql-active .ql-stroke.ql-fill {
+  stroke: #0082EB !important;
+  fill: #0082EB !important;
+}
+
+.ql-bubble .ql-tooltip .ql-formats button.ql-active svg {
+  color: #0082EB !important;
+}
+
+.ql-bubble .ql-tooltip .ql-formats button.ql-active svg path {
+  fill: #0082EB !important;
+}
+
+/* Active + Hover state: BLUE-600 icons */
+.ql-bubble .ql-tooltip .ql-formats button.ql-active:hover .ql-stroke {
+  stroke: #0082EB !important;
+}
+
+.ql-bubble .ql-tooltip .ql-formats button.ql-active:hover .ql-fill {
+  fill: #0082EB !important;
+}
+
+/* Custom toolbar buttons (Rewrite, Sources) - styles handled above */
+
+.custom-toolbar-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
+  padding: 10px 16px 10px 12px !important;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-radius: 1000px !important;
+  cursor: pointer !important;
+  font-family: 'Poppins', sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 600 !important;
+  color: rgba(0, 0, 0, 0.64) !important;
+  white-space: nowrap !important;
+  transition: background-color 0.2s ease !important;
+  height: 40px !important;
+  min-width: 80px !important;
+  width: auto !important;
+  box-sizing: border-box !important;
+  margin: 0 !important;
+  overflow: visible !important;
+}
+
+.custom-toolbar-btn:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+.custom-toolbar-btn:active {
+  background-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+.custom-toolbar-btn svg {
+  width: 20px !important;
+  height: 20px !important;
+  flex-shrink: 0 !important;
+  overflow: visible !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+}
+
+/* Custom toolbar buttons - default state: black with 64% opacity */
+.custom-toolbar-btn svg path {
+  fill: rgba(0, 0, 0, 0.64) !important;
+}
+
+.custom-toolbar-btn {
+  color: rgba(0, 0, 0, 0.64) !important;
+}
+
+/* Custom toolbar buttons - hover state: black 100% opacity */
+.custom-toolbar-btn:hover svg path {
+  fill: #000000 !important;
+}
+
+.custom-toolbar-btn:hover {
+  color: #000000 !important;
+}
+
+.custom-toolbar-btn span {
+  text-transform: capitalize !important;
+}
+
+/* Separator between custom buttons and format buttons */
+.custom-toolbar-separator {
+  width: 1px !important;
+  height: 24px !important;
+  background-color: #d6d6d6 !important;
+  margin: 0 8px !important;
+  flex-shrink: 0 !important;
+}
+
+/* Nested bullet indentation - Quill uses .ql-indent-X classes */
+/* These are fallback rules - component-specific rules may override */
+.ql-editor li.ql-indent-1 {
+  padding-left: 1.5em !important;
+}
+
+.ql-editor li.ql-indent-2 {
+  padding-left: 3em !important;
+}
+
+.ql-editor li.ql-indent-3 {
+  padding-left: 4.5em !important;
+}
+
+.ql-editor li.ql-indent-4 {
+  padding-left: 6em !important;
+}
+
+.ql-editor li.ql-indent-5 {
+  padding-left: 7.5em !important;
+}
+
+/* View mode nested bullets */
+.profile-card-content li.ql-indent-1 {
+  padding-left: 1.5em !important;
+  margin-left: 0 !important;
+}
+
+.profile-card-content li.ql-indent-2 {
+  padding-left: 3em !important;
+  margin-left: 0 !important;
+}
+
+.profile-card-content li.ql-indent-3 {
+  padding-left: 4.5em !important;
+  margin-left: 0 !important;
+}
+
+.profile-card-content li.ql-indent-4 {
+  padding-left: 6em !important;
+  margin-left: 0 !important;
+}
+
+.profile-card-content li.ql-indent-5 {
+  padding-left: 7.5em !important;
+  margin-left: 0 !important;
+}
+
+/* Quill link preview tooltip - ensure it's never clipped */
+.ql-bubble .ql-tooltip[data-mode="link"],
+.ql-bubble .ql-tooltip:not(.ql-editing):not(.ql-hidden) .ql-preview {
+  z-index: 99999 !important;
+  overflow: visible !important;
+}
+
+/* Hide Quill's default link PREVIEW tooltip (hover tooltip) - NOT the editing mode */
+/* Hide entire tooltip when it contains a preview (link hover state) */
+.ql-bubble .ql-tooltip[data-mode="link"]:not(.ql-editing),
+.ql-bubble .ql-tooltip:not(.ql-editing):has(.ql-preview),
+.ql-bubble .ql-tooltip:not(.ql-editing):has(a.ql-preview) {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+  position: absolute !important;
+  left: -99999px !important;
+}
+
+/* Hide link preview elements only when NOT editing */
+.ql-bubble .ql-tooltip:not(.ql-editing) .ql-preview,
+.ql-bubble .ql-tooltip:not(.ql-editing) a.ql-preview,
+.ql-bubble a.ql-preview {
+  display: none !important;
+  visibility: hidden !important;
+  width: 0 !important;
+  height: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Hide action/remove buttons only when NOT editing (these are for the hover preview) */
+.ql-bubble .ql-tooltip:not(.ql-editing) .ql-action,
+.ql-bubble .ql-tooltip:not(.ql-editing) .ql-remove,
+.ql-bubble a.ql-action:not(.ql-editing),
+.ql-bubble a.ql-remove:not(.ql-editing) {
+  display: none !important;
+  visibility: hidden !important;
+}
+
+/* Hide tooltip arrow for link preview only when NOT editing */
+.ql-bubble .ql-tooltip[data-mode="link"]:not(.ql-editing) .ql-tooltip-arrow,
+.ql-bubble .ql-tooltip:not(.ql-editing) .ql-tooltip-arrow {
+  display: none !important;
+}
+
+/* KEEP link editing mode fully visible and functional */
+.ql-bubble .ql-tooltip.ql-editing {
+  display: flex !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.ql-bubble .ql-tooltip.ql-editing .ql-tooltip-editor {
+  display: flex !important;
+  visibility: visible !important;
+}
+
+.ql-bubble .ql-tooltip.ql-editing input[type="text"] {
+  display: block !important;
+  visibility: visible !important;
+}
+
+.ql-bubble .ql-tooltip.ql-editing a.ql-action {
+  display: inline !important;
+  visibility: visible !important;
+}
+
+/* Ensure editor containers allow overflow for tooltips */
+.quill-editor-wrapper,
+.quill-editor-wrapper .ql-container,
+.quill-editor-wrapper .ql-editor {
+  overflow: visible !important;
+}
+
+/* But keep internal scrolling for editor content */
+.quill-editor-wrapper .ql-editor {
+  overflow-y: auto !important;
+  overflow-x: hidden !important;
+}
+
+/* Ensure Quill container doesn't clip tooltips */
+.ql-container.ql-bubble {
+  overflow: visible !important;
+}
+
+/* Remove browser's default tooltip for links in editor */
+/* Remove title attribute which triggers browser tooltip */
+.quill-editor-wrapper a,
+.ql-editor a {
+  pointer-events: auto !important;
+}
+
+/* Prevent browser tooltip - remove title attribute via CSS won't work, but we can prevent hover tooltip */
+.quill-editor-wrapper a:hover,
+.ql-editor a:hover {
+  text-decoration: underline !important;
+}
+
+/* Additional prevention - handled in JS by removing title attribute */
+
+
+/* ==================== Rich text editor (V2 + composer) ==================== */
+.rich-text-editor ul {
+  list-style-type: disc;
+  padding-left: 21px;
+  margin: 0;
+}
+
+.rich-text-editor ol {
+  list-style-type: decimal;
+  padding-left: 21px;
+  margin: 0;
+}
+
+.rich-text-editor p {
+  margin: 0;
+}
+
+.rich-text-editor a {
+  color: #0068bc;
+  text-decoration: underline;
+}
+
+.rich-text-editor:empty::before {
+  content: attr(data-placeholder);
+  color: rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+}
+
+/* Confidence underlines on pitch statements (Figma: green / orange / red) */
+.pitch-statement {
+  text-decoration-line: underline;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+  border-radius: 2px;
+  transition: background-color 0.15s ease;
+}
+
+.pitch-statement[data-level="high"] {
+  text-decoration-color: #149c4d;
+}
+
+.pitch-statement[data-level="medium"] {
+  text-decoration-color: #fe800f;
+  cursor: pointer;
+}
+
+.pitch-statement[data-level="low"] {
+  text-decoration-color: #c41e2f;
+  cursor: pointer;
+}
+
+.pitch-statement[data-level="medium"]:hover,
+.pitch-statement[data-active="true"][data-level="medium"] {
+  background-color: rgba(254, 128, 15, 0.1);
+}
+
+.pitch-statement[data-level="low"]:hover,
+.pitch-statement[data-active="true"][data-level="low"] {
+  background-color: rgba(196, 30, 47, 0.08);
+}
+
+.pitch-statement[data-resolved="true"] {
+  background-color: rgba(20, 156, 77, 0.08);
+}
+
+/* Read-only pitch content (V2 view mode + composer) */
+.pitch-content ul {
+  list-style-type: disc;
+  padding-left: 24px;
+  margin: 0;
+}
+
+.pitch-content p {
+  margin: 0;
+}
+
+/* Skeleton shimmer bars (shared by Loader and the AI popover) */
+.loader-bar-animated {
+  background: linear-gradient(90deg, rgba(0, 0, 0, 0.04) 0%, rgba(0, 0, 0, 0.12) 50%, rgba(0, 0, 0, 0.04) 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Email content blocks (Notion-style): placeholder in empty blocks, gutter always visible on touch */
+.content-block-editable:empty::before,
+.content-block-editable:has(> br:only-child)::before {
+  content: attr(data-placeholder);
+  color: rgba(0, 0, 0, 0.3);
+  pointer-events: none;
+}
+
+.content-block-editable ul {
+  list-style-type: disc;
+  padding-left: 22px;
+  margin: 0;
+}
+
+@media (hover: none) {
+  .content-block-gutter {
+    opacity: 1;
+  }
+}

@@ -1,0 +1,159 @@
+.App {
+  min-height: 100vh;
+}
+
+/* Responsive content area - fixed widths for 1992px and 1416px viewports */
+/* Default: 1992px viewport - content width 1256px */
+.content-area-1992 {
+  max-width: 1992px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Content container - fixed width 1256px for 1992px viewport and above */
+/* Margins will adjust automatically for in-between viewport sizes */
+.content-container {
+  width: 1256px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Content wrapper - for flex containers without extra margins */
+.content-wrapper {
+  width: 1256px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Responsive content area for 1416px viewport */
+/* At 1416px and below: content width 1320px, margins adjust automatically */
+@media (max-width: 1416px) {
+  .content-area-1992 {
+    max-width: 1416px;
+  }
+  
+  /* Content container - fixed width 1320px for 1416px viewport */
+  .content-container {
+    width: 1320px;
+  }
+  
+  .content-wrapper {
+    width: 1320px;
+  }
+}
+
+/* Below the fixed widths: fill the viewport, keeping a 24px gutter on each side */
+.content-container,
+.content-wrapper {
+  max-width: calc(100% - 48px);
+}
+
+/* Phones: 16px gutter on each side */
+@media (max-width: 639px) {
+  .content-container,
+  .content-wrapper {
+    max-width: calc(100% - 32px);
+  }
+}
+
+/* Keep floating AI widgets (fixed 600px wide, positioned for desktop) inside the viewport */
+@media (max-width: 639px) {
+  .ai-rewrite-widget,
+  .ai-sources-widget {
+    left: 16px !important;
+    right: 16px !important;
+    top: 80px !important;
+    width: auto !important;
+    max-height: calc(100dvh - 96px) !important;
+  }
+}
+
+/* Full width content area - 48px padding on each side (for drawer open state) */
+/* Only for smaller viewports - expands to use available space */
+.content-area-full {
+  padding-left: 48px;
+  padding-right: 48px;
+  width: 100%;
+}
+
+/* Header content area when drawer is open */
+.header-content-drawer-open {
+  padding-left: 48px;
+  padding-right: 48px;
+  width: 100%;
+}
+
+/* For larger viewports (>1992px), constrain width when drawer is open */
+/* Cards (1256px) + Drawer (616px) + Gap (24px) + internal padding = ~1896px inner content */
+/* Max-width includes the 48px padding on each side */
+@media (min-width: 1993px) {
+  .content-area-full {
+    max-width: 1992px; /* 1896px content + 48px padding each side */
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 48px;
+    padding-right: 48px;
+  }
+  
+  .header-content-drawer-open {
+    max-width: 1992px; /* Match content area max-width */
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 48px;
+    padding-right: 48px;
+  }
+}
+
+/* Agentic PM: floats on the right of the Express List; full screen on phones */
+.agentic-pm {
+  top: 136px;
+  right: 24px;
+  bottom: 88px; /* Clears the floating experience menu */
+  width: 396px;
+  border-radius: 16px;
+}
+
+@media (max-width: 639px) {
+  .agentic-pm {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: auto;
+    border-radius: 0;
+  }
+}
+
+/* Leave room for the chat beside the table on wide screens */
+@media (min-width: 1280px) {
+  .express-with-chat {
+    padding-right: 444px;
+  }
+}
+
+/* Express List row detail card (Figma comp-card-rhs-xlg: 548px, right side) */
+.express-detail {
+  top: 136px;
+  right: 24px;
+  bottom: 24px;
+  width: 548px;
+  max-width: calc(100vw - 48px);
+  border-radius: 16px;
+}
+
+@media (max-width: 639px) {
+  .express-detail {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: auto;
+    max-width: none;
+    border-radius: 0;
+  }
+}
+
+/* Express List row hover */
+.express-row:hover td {
+  background-color: #f6f8fb !important;
+}

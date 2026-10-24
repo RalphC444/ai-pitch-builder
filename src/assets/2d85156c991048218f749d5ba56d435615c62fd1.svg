@@ -1,0 +1,10 @@
+<svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+<path id="Icon Shape" d="M10 0C10 5.52285 5.52284 10 0 10C5.52284 10 10 14.4771 10 20C10 14.4771 14.4772 10 20 10C14.4772 10 10 5.52285 10 0Z" fill="url(#paint0_linear_7351_62008)"/>
+<defs>
+<linearGradient id="paint0_linear_7351_62008" x1="10" y1="0" x2="10" y2="20" gradientUnits="userSpaceOnUse">
+<stop offset="0.24" stop-color="#339BEF"/>
+<stop offset="0.5625" stop-color="#8D98FF"/>
+<stop offset="1" stop-color="#D3BBFF"/>
+</linearGradient>
+</defs>
+</svg>
