@@ -24,7 +24,15 @@ npx eslint --ext .ts,.tsx src         # 0 errors; ~15 old warnings in legacy fil
 - Stack: React 18, TypeScript 4.9, Create React App (react-scripts 5), Tailwind 3, **MUI v5** + @mui/icons-material + Emotion. `StyledEngineProvider injectFirst` lets Tailwind classes override MUI.
 - Theme: `src/theme.ts`. Font **Poppins** everywhere in the UI. Primary #0068bc, success #149c4d, warning #fe800f, error #c41e2f, radius 6, buttons not uppercase.
 - Breakpoints: `src/hooks/useMediaQuery.ts`. `MOBILE_QUERY` = max-width 639px, `COMPACT_QUERY` = max-width 1023px.
-- Not a git repository.
+- Git repo: **https://github.com/RalphC444/ai-pitch-builder** (public). `main` holds the source.
+- Live demo: **https://ralphc444.github.io/ai-pitch-builder/** (GitHub Pages, served from the `gh-pages` branch).
+- The OpenRouter key lives in **`.env.local`** (git-ignored; template in `.env.example`) and is read as `REACT_APP_OPENROUTER_API_KEY`. Restart `npm start` after changing it.
+- **Redeploying the demo:**
+  1. Build **without the key**, or it gets baked into the public JavaScript: `REACT_APP_OPENROUTER_API_KEY= npm run build`.
+  2. Check for the key: `grep -rl sk-or-v1 build` must print nothing.
+  3. Copy `build/` into a fresh folder, add `.nojekyll`, commit, and force-push to `origin gh-pages`.
+
+  The demo uses the offline AI fallbacks. `package.json` sets `homepage: "."` so assets load from the Pages subpath.
 - `plan.md` is the user's original project plan.
 
 ---
@@ -35,7 +43,7 @@ npx eslint --ext .ts,.tsx src         # 0 errors; ~15 old warnings in legacy fil
 - **Never download or pull SVGs from Figma, and never add SVG files yourself.** This is at the top of `plan.md`. That is why the Guidepoint logo is a text stand-in (section 7).
 - **Ask before building ideas the user frames as discussion** ("let's talk about it", "prompt me with questions", "maybe a scale of…"). Building the human-in-the-loop review agent unasked earlier drew "you kind of went and did your own thing, which I did not want you to do". Build only what's explicitly requested, and flag any extra you add.
 - Call the role **"Project Manager"**, never "RM". Email addresses like `rm1@guidepoint.com` are data, so leave them.
-- **Security:** an OpenRouter API key is hard-coded in `src/services/aiService.ts` (line 7). Don't copy it anywhere, don't publish it, and recommend moving it to an env var before anything is shared. The app falls back to offline rule-based logic when the API fails.
+- **Security:** the OpenRouter key is in `.env.local` only. It was moved out of `src/services/aiService.ts` before the first commit, so it has never been in git. Never commit it, and never build the public demo with it. The app falls back to offline rule-based logic without it.
 - Don't send the user's email address to outside services.
 
 **How they work**
