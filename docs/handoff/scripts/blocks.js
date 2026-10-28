@@ -23,7 +23,7 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
   await send('Page.bringToFront');
   await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
   await send('Page.navigate', { url: 'http://localhost:3000' }); await sleep(1800);
-  await ev(`document.querySelector('button[aria-label="Send selected advisors to Pitch Curation"]').click()`); await sleep(1300);
+  await ev(`document.querySelector('button[aria-label="Send selected advisors to client"]').click()`); await sleep(1300);
 
   // Tooltip carry-over: hover Edit, click it, check no "Clear pitch" tooltip is open
   const e = await center('button[aria-label="Edit Jennifer Walsh"]'); await sleep(200);

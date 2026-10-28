@@ -11,8 +11,12 @@ import { WorkflowHeader } from '../WorkflowHeader';
 import { AgentReviewPanel } from './AgentReviewPanel';
 import { EmailBody, EmailBrandFooter, EmailBrandHeader, EmailHeaderRows } from './EmailPreviewModal';
 import { CopyEmailButton } from './CopyEmailButton';
-import { ContentBlocks } from './ContentBlocks';
-import { RichTextEditor } from '../../components/editor/RichTextEditor';
+import { RichTextEditor, RichTextEditorHandle } from '../../components/editor/RichTextEditor';
+import IconButton from '@mui/material/IconButton';
+import Tooltip from '@mui/material/Tooltip';
+import AddRoundedIcon from '@mui/icons-material/AddRounded';
+import DeleteOutlineRoundedIcon from '@mui/icons-material/DeleteOutlineRounded';
+import { createBlock } from '../../data/contentBlocks';
 import { CampaignIcon } from '../../components/icons/CampaignIcon';
 import { EditIcon } from '../../components/icons/EditIcon';
 import { ModalButton } from '../../components/modal';
@@ -73,9 +77,78 @@ const NEW_THREAD = '__new-thread__';
 const TEMPLATES = ['Blank Email', 'Express List - Unvetted', 'Express List - Vetted'];
 const SENDERS = ['rcapriglione@guidepoint.com', 'research-team@guidepoint.com'];
 
-const PRIOR_EMAILS = [
-  { from: 'sjohnson@client.com', date: 'Oct 20', snippet: 'Thanks - can you prioritize former Novo and Lilly supply chain leaders first?' },
-  { from: 'rcapriglione@guidepoint.com', date: 'Oct 18', snippet: 'Kicking off recruiting across GLP-1 formers, packaging/elastomer procurement and biosimilar players.' },
+interface ThreadEmail {
+  fromName: string;
+  fromEmail: string;
+  to: string;
+  cc?: string;
+  date: string;
+  subject: string;
+  body: string;
+}
+
+/** Earlier emails in the thread, oldest first: the client's project request, the kickoff reply, the latest note */
+const PRIOR_EMAILS: ThreadEmail[] = [
+  {
+    fromName: 'Claire Johnson',
+    fromEmail: 'client1@org.com',
+    to: 'rcapriglione@guidepoint.com',
+    cc: 'client2@org.com',
+    date: 'Mon, Oct 19, 9:12 AM',
+    subject: 'New project: GLP-1 elastomer & device supply',
+    body: `Hi Ralph,
+
+We're starting a project on supply constraints for GLP-1 injectables and would like to speak with experts in three areas:
+
+1. Former GLP-1 leaders at Novo Nordisk and Eli Lilly (commercial, supply chain, medical)
+2. Procurement leads for primary packaging and elastomers (stoppers, plungers, pen components)
+3. Biosimilar companies planning GLP-1 launches
+
+Key questions:
+- Where are the capacity bottlenecks for pens and cartridges over the next three years?
+- How are elastomer suppliers allocating capacity between brands?
+- How quickly can biosimilar entrants secure device supply?
+
+Could you send 8 to 10 profiles to start? We'd like 60-minute calls, ideally this week.
+
+Thanks,
+Claire Johnson
+Director, Healthcare Investments`,
+  },
+  {
+    fromName: 'Ralph Capriglione',
+    fromEmail: 'rcapriglione@guidepoint.com',
+    to: 'client1@org.com',
+    cc: 'client2@org.com, compliance@guidepoint.com',
+    date: 'Mon, Oct 19, 2:40 PM',
+    subject: 'Re: New project: GLP-1 elastomer & device supply',
+    body: `Hi Claire,
+
+Thanks for the brief. We've set the project up as three angles:
+
+- GLP-1 Formers
+- GLP-1 primary packaging/elastomer procurement
+- Biosimilar players
+
+Recruiting has started across all three. You'll have a first set of advisors by Wednesday, each with a short pitch on how they fit your questions.
+
+Best,
+Ralph Capriglione
+Project Manager, Guidepoint`,
+  },
+  {
+    fromName: 'Claire Johnson',
+    fromEmail: 'client1@org.com',
+    to: 'rcapriglione@guidepoint.com',
+    cc: 'client2@org.com',
+    date: 'Tue, Oct 20, 8:05 AM',
+    subject: 'Re: New project: GLP-1 elastomer & device supply',
+    body: `Thanks Ralph. Could you prioritize former Novo and Lilly supply chain leaders first?
+
+We'd also like at least two people who have negotiated elastomer contracts directly.
+
+Claire`,
+  },
 ];
 
 export const DEFAULT_EMAIL_DRAFT: EmailDraft = {
@@ -93,9 +166,16 @@ export const DEFAULT_EMAIL_DRAFT: EmailDraft = {
 };
 
 const labelStyle: React.CSSProperties = { fontFamily: font, fontSize: '14px', lineHeight: '18px', fontWeight: 500, color: '#1c2024' };
-const Field: React.FC<{ id: string; label: string; children: React.ReactNode }> = ({ id, label, children }) => (
+const Field: React.FC<{ id: string; label: string; action?: React.ReactNode; children: React.ReactNode }> = ({ id, label, action, children }) => (
   <div className="flex flex-col gap-1.5">
-    <label htmlFor={id} style={labelStyle}>{label}</label>
+    {action ? (
+      <div className="flex items-center justify-between gap-3">
+        <label htmlFor={id} style={labelStyle}>{label}</label>
+        {action}
+      </div>
+    ) : (
+      <label htmlFor={id} style={labelStyle}>{label}</label>
+    )}
     {children}
   </div>
 );
@@ -144,6 +224,15 @@ export const EmailComposer: React.FC<EmailComposerProps> = ({
   const isMobile = useMediaQuery(MOBILE_QUERY);
   const agentRef = useRef<HTMLDivElement>(null);
   const emailBodyRef = useRef<HTMLDivElement>(null);
+  const blocks = draft.blocks || [];
+  const blockEditorRefs = useRef(new Map<string, RichTextEditorHandle>());
+  // A newly added content block takes the cursor
+  const [focusBlockId, setFocusBlockId] = useState<string | null>(null);
+  useEffect(() => {
+    if (!focusBlockId) return;
+    blockEditorRefs.current.get(focusBlockId)?.focus();
+    setFocusBlockId(null);
+  }, [focusBlockId, draft.blocks]);
   const [run, setRun] = useState<AgentRun | null>(null);
   const [isRunning, setIsRunning] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
@@ -304,7 +393,9 @@ export const EmailComposer: React.FC<EmailComposerProps> = ({
       >
         <span className="flex flex-col min-w-0">
           <span className="truncate" style={{ fontFamily: font, fontSize: '14px', fontWeight: 600, color: '#1c2024' }}>{draft.thread}</span>
-          <span style={{ fontFamily: font, fontSize: '12px', fontWeight: 500, color: '#5c5c5c' }}>{PRIOR_EMAILS[0].from}</span>
+          <span style={{ fontFamily: font, fontSize: '12px', fontWeight: 500, color: '#5c5c5c' }}>
+            Latest from {PRIOR_EMAILS[PRIOR_EMAILS.length - 1].fromName} · {PRIOR_EMAILS[PRIOR_EMAILS.length - 1].date}
+          </span>
         </span>
         <span className="flex items-center gap-3 shrink-0">
           <span className="flex items-center justify-center rounded-full" style={{ width: '20px', height: '20px', backgroundColor: '#5c5c5c', color: '#ffffff', fontSize: '11px', fontWeight: 600 }}>
@@ -315,14 +406,31 @@ export const EmailComposer: React.FC<EmailComposerProps> = ({
           </span>
         </span>
       </button>
+      {/* Full emails, oldest first, laid out like an email client */}
       {isThreadOpen && PRIOR_EMAILS.map((email) => (
-        <div key={email.date} className="flex flex-col gap-1 px-4 py-3 border-t" style={{ borderColor: '#ebeef7' }}>
-          <span className="flex justify-between gap-2" style={{ fontFamily: font, fontSize: '12px', fontWeight: 600, color: '#333333' }}>
-            {email.from}
-            <span style={{ fontWeight: 500, color: '#8b8d98' }}>{email.date}</span>
-          </span>
-          <span style={{ fontFamily: font, fontSize: '12px', lineHeight: '17px', fontWeight: 500, color: '#5c5c5c' }}>{email.snippet}</span>
-        </div>
+        <article key={email.date} className="flex flex-col gap-3 px-4 sm:px-5 py-4 border-t" style={{ borderColor: '#ebeef7', fontFamily: font }}>
+          <div className="flex items-start gap-3">
+            <span
+              className="flex items-center justify-center rounded-full shrink-0"
+              style={{ width: '32px', height: '32px', backgroundColor: email.fromEmail.endsWith('@guidepoint.com') ? '#e4effa' : '#eef1f5', color: email.fromEmail.endsWith('@guidepoint.com') ? '#0068bc' : '#3d4652', fontSize: '13px', fontWeight: 600 }}
+              aria-hidden="true"
+            >
+              {email.fromName.split(' ').map((part) => part[0]).join('')}
+            </span>
+            <div className="flex flex-col min-w-0 flex-1" style={{ fontSize: '12px', lineHeight: '18px', color: '#5c5c5c' }}>
+              <div className="flex flex-wrap items-baseline justify-between gap-x-3">
+                <span className="min-w-0 break-words" style={{ fontSize: '13px', color: '#1c2024' }}>
+                  <strong style={{ fontWeight: 600 }}>{email.fromName}</strong> &lt;{email.fromEmail}&gt;
+                </span>
+                <span className="shrink-0" style={{ color: '#8b8d98' }}>{email.date}</span>
+              </div>
+              <span className="break-words">To: {email.to}</span>
+              {email.cc && <span className="break-words">Cc: {email.cc}</span>}
+            </div>
+          </div>
+          <p style={{ margin: 0, fontSize: '14px', fontWeight: 600, color: '#1c2024' }}>{email.subject}</p>
+          <p className="break-words" style={{ margin: 0, fontSize: '14px', lineHeight: '22px', color: '#333333', whiteSpace: 'pre-line' }}>{email.body}</p>
+        </article>
       ))}
     </div>
     )}
@@ -412,7 +520,23 @@ export const EmailComposer: React.FC<EmailComposerProps> = ({
       <section className="bg-white flex flex-col gap-4 p-4 sm:p-6" style={{ borderRadius: '16px' }}>
         <SectionTitle icon={<GroupsRoundedIcon sx={{ color: '#1c2024' }} />}>Specify Recipients</SectionTitle>
         <div className="flex flex-col gap-4 p-4 sm:p-5" style={{ border: '1px solid #ebeef7', borderRadius: '12px' }}>
-          <Field id="email-thread" label="Thread:">
+          {/* The show / hide toggle shares the Thread label row */}
+          <Field
+            id="email-thread"
+            label="Thread:"
+            action={
+              <Button
+              onClick={() => setIsRecipientsExpanded((expanded) => !expanded)}
+              aria-expanded={isRecipientsExpanded}
+              aria-controls="recipient-fields"
+              size="small"
+              endIcon={<ExpandMoreRoundedIcon sx={{ transform: isRecipientsExpanded ? 'rotate(180deg)' : undefined, transition: 'transform 0.2s' }} />}
+              sx={{ flexShrink: 0, mr: -1, my: -0.5, minHeight: 28, px: 1, fontSize: 13, fontWeight: 600, whiteSpace: 'nowrap', '& .MuiButton-endIcon': { ml: 0.25 } }}
+            >
+              {isRecipientsExpanded ? 'Hide fields' : 'Show all fields'}
+            </Button>
+            }
+          >
             <SelectInput
               id="email-thread"
               value={isNewThread ? NEW_THREAD : draft.thread}
@@ -425,19 +549,15 @@ export const EmailComposer: React.FC<EmailComposerProps> = ({
               <TextInput id="email-new-thread" value={draft.thread} onChange={(thread) => updateDraft({ thread })} placeholder="Name this thread" />
             </Field>
           )}
-          <Button
-            onClick={() => setIsRecipientsExpanded((expanded) => !expanded)}
-            aria-expanded={isRecipientsExpanded}
-            aria-controls="recipient-fields"
-            endIcon={<ExpandMoreRoundedIcon sx={{ transform: isRecipientsExpanded ? 'rotate(180deg)' : undefined, transition: 'transform 0.2s' }} />}
-            sx={{ justifyContent: 'space-between', gap: 2, minHeight: 0, px: 0, '&:hover': { backgroundColor: 'transparent' } }}
-            disableRipple
-          >
-            <span className="min-w-0 truncate text-left" style={{ fontSize: '13px', fontWeight: 500, color: '#5c5c5c' }}>
-              {isRecipientsExpanded ? 'Hide recipient fields' : `To: ${draft.to || '-'} · Subject: ${draft.subject || '-'}`}
-            </span>
-            <span className="shrink-0" style={{ fontSize: '13px' }}>{isRecipientsExpanded ? 'Collapse' : 'Show all fields'}</span>
-          </Button>
+          {/* While the fields are hidden, a summary of the key ones */}
+          {!isRecipientsExpanded && (
+            <dl className="grid min-w-0 gap-x-2 gap-y-0.5" style={{ gridTemplateColumns: 'auto minmax(0, 1fr)', fontFamily: font, fontSize: '13px', lineHeight: '19px' }}>
+              <dt style={{ fontWeight: 600, color: '#5c5c5c' }}>To:</dt>
+              <dd className="break-words" style={{ color: '#1c2024' }}>{draft.to || '-'}</dd>
+              <dt style={{ fontWeight: 600, color: '#5c5c5c' }}>Subject:</dt>
+              <dd className="break-words" style={{ color: '#1c2024' }}>{draft.subject || '-'}</dd>
+            </dl>
+          )}
           {isRecipientsExpanded && (
             <div id="recipient-fields" className="flex flex-col gap-4">
               <div className="h-px w-full" style={{ backgroundColor: '#ebeef7' }} aria-hidden="true" />
@@ -520,15 +640,44 @@ export const EmailComposer: React.FC<EmailComposerProps> = ({
           Attach Insights Transcripts
         </button>
 
-        <div className="flex flex-col gap-2 p-4 sm:p-5" style={{ border: '1px solid #ebeef7', borderRadius: '12px' }}>
-          <div className="flex flex-col gap-0.5">
-            <SectionTitle>Content Blocks</SectionTitle>
-            <p style={{ fontFamily: font, fontSize: '12px', color: '#8b8d98' }}>Added after the advisor pitches. Type / in an empty block to change its type.</p>
+        {/* Content blocks: extra sections like the Introduction, between the pitches and the closing message */}
+        {blocks.map((block, index) => (
+          <div key={block.id} className="flex flex-col gap-3 p-4 sm:p-5" style={{ border: '1px solid #ebeef7', borderRadius: '12px' }}>
+            <div className="flex items-center justify-between gap-2">
+              <SectionTitle>Content Block{blocks.length > 1 ? ` ${index + 1}` : ''}</SectionTitle>
+              <Tooltip title="Remove content block">
+                <IconButton size="small" aria-label={`Remove content block ${index + 1}`} onClick={() => updateDraft({ blocks: blocks.filter((item) => item.id !== block.id) })}>
+                  <DeleteOutlineRoundedIcon fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            </div>
+            <RichTextEditor
+              ref={(handle) => {
+                if (handle) blockEditorRefs.current.set(block.id, handle);
+                else blockEditorRefs.current.delete(block.id);
+              }}
+              value={block.html}
+              onChange={(html) => updateDraft({ blocks: blocks.map((item) => (item.id === block.id ? { ...item, html } : item)) })}
+              minHeight="120px"
+              lineHeight="24px"
+              aria-label={`Content block ${index + 1}`}
+            />
           </div>
-          <div className="sm:pl-14">
-            <ContentBlocks blocks={draft.blocks || []} onChange={(blocks) => updateDraft({ blocks })} />
-          </div>
-        </div>
+        ))}
+
+        <button
+          type="button"
+          onClick={() => {
+            const block = createBlock('text');
+            updateDraft({ blocks: [...blocks, block] });
+            setFocusBlockId(block.id);
+          }}
+          className="flex items-center justify-center gap-2 w-full rounded-xl py-4 transition-colors hover:bg-[#f6f8fb]"
+          style={{ fontFamily: font, fontSize: '14px', fontWeight: 600, color: '#5c5c5c', border: '1.5px dashed #c4c9d1' }}
+        >
+          <AddRoundedIcon fontSize="small" />
+          Add content block
+        </button>
 
         <div className="flex flex-col gap-3 p-4 sm:p-5" style={{ border: '1px solid #ebeef7', borderRadius: '12px' }}>
           <SectionTitle>Closing Message</SectionTitle>

@@ -8,7 +8,7 @@ import PersonAddAlt1OutlinedIcon from '@mui/icons-material/PersonAddAlt1Outlined
 import PlaylistAddCheckRoundedIcon from '@mui/icons-material/PlaylistAddCheckRounded';
 import WorkspacePremiumOutlinedIcon from '@mui/icons-material/WorkspacePremiumOutlined';
 import MailOutlineRoundedIcon from '@mui/icons-material/MailOutlineRounded';
-import KeyboardArrowDownRoundedIcon from '@mui/icons-material/KeyboardArrowDownRounded';
+import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
 import { useToast } from '../../components/toast';
 import { useMediaQuery, MOBILE_QUERY } from '../../hooks/useMediaQuery';
 import type { ExpressAdvisor } from '../../data/expressList';
@@ -67,7 +67,7 @@ export const ExpressActions: React.FC<ExpressActionsProps> = ({
     <div className="flex items-center gap-2 shrink-0">
       <Button
         variant="outlined"
-        endIcon={<KeyboardArrowDownRoundedIcon />}
+        endIcon={<ExpandMoreRoundedIcon />}
         onClick={(event) => setAnchor(event.currentTarget)}
         aria-haspopup="menu"
         aria-expanded={Boolean(anchor)}
@@ -126,9 +126,10 @@ export const ExpressActions: React.FC<ExpressActionsProps> = ({
         variant="contained"
         startIcon={isMobile ? undefined : <MailOutlineRoundedIcon />}
         onClick={() => (selected.length ? onSend(selected) : showToast('Select advisors to send'))}
-        aria-label="Send selected advisors to Pitch Curation"
+        aria-label="Send selected advisors to client"
       >
-        {selected.length ? `Send (${selected.length})` : 'Send'}
+        {/* One action: drafts the pitches and email for the client. Phones keep the short label to fit the nav */}
+        {`${isMobile ? 'Send' : 'Send to Client'}${selected.length ? ` (${selected.length})` : ''}`}
       </Button>
     </div>
   );

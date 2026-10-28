@@ -1,0 +1,348 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Usability test concepts</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400,0..1,0&display=block">
+<style>
+  /* 2x2 board: Option A (lost) on top, Option B (won) below. Both are full pages in the released shell, no modal.
+     A = fixed split (profile data | empty editor). B = editor-first pitch card + profile drawer. Frames are laid out at 1440x810 and scaled. */
+  :root {
+    --blue: #0068bc; --blue-soft: #e4effa; --ink: #1c2024; --text: #333333; --muted: #5c5c5c; --faint: #8b8d98;
+    --line: #e3e6eb; --line-soft: #ebeef7; --bg: #f0f4f8; --panel: #f6f8fb;
+    --green: #149c4d; --orange: #fe800f;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: #000; }
+  body { width: 1934px; height: 1290px; font-family: 'Poppins', sans-serif; color: var(--ink); }
+  .ms { font-family: 'Material Symbols Rounded'; font-weight: normal; font-style: normal; font-size: 20px; line-height: 1; display: inline-block; vertical-align: middle; font-feature-settings: 'liga'; }
+
+  .board { display: grid; row-gap: 22px; }
+  .label { display: inline-flex; align-items: center; gap: 14px; height: 52px; padding: 0 28px 0 18px; background: #fff; border-radius: 0 26px 26px 0; font-size: 19px; font-weight: 600; width: max-content; }
+  .label .mark { width: 28px; height: 28px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; color: #fff; }
+  .label .mark .ms { font-size: 20px; font-weight: 700; }
+  .label.lost .mark { background: #e5484d; }
+  .label.won .mark { background: #149c4d; }
+  .label small { font-size: 16px; font-weight: 500; color: var(--muted); }
+  .row { display: grid; grid-template-columns: 960px 960px; column-gap: 14px; }
+  .cell { width: 960px; height: 540px; overflow: hidden; border-radius: 6px; position: relative; }
+  .frame { width: 1440px; height: 810px; transform: scale(0.6667); transform-origin: top left; position: absolute; top: 0; left: 0; background: var(--bg); overflow: hidden; }
+
+  /* Released shell */
+  .nav { height: 64px; background: #fff; display: flex; align-items: center; justify-content: space-between; padding: 0 48px; position: relative; z-index: 3; }
+  .nav-left { display: flex; align-items: center; gap: 12px; font-weight: 700; font-size: 16px; white-space: nowrap; }
+  .logo { font-weight: 600; font-size: 19px; letter-spacing: -0.035em; color: #000; display: inline-flex; align-items: baseline; }
+  .logo i { display: inline-block; width: 5px; height: 5px; border-radius: 50%; background: #ffcd00; margin-left: 1px; }
+  .nav-right { display: flex; align-items: center; gap: 14px; color: var(--muted); }
+  .nav-right .divider { width: 1px; height: 24px; background: var(--line); }
+  .btn { height: 40px; padding: 0 16px; border-radius: 6px; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: 14px; white-space: nowrap; }
+  .btn.outlined { border: 1px solid rgba(0, 104, 188, 0.5); color: var(--blue); background: #fff; }
+  .btn.contained { background: var(--blue); color: #fff; }
+  .btn.ghost { color: var(--text); padding: 0 10px; }
+  .btn.small { height: 34px; font-size: 13px; padding: 0 12px; }
+  .page { padding: 22px 60px 0; display: flex; flex-direction: column; gap: 16px; }
+  .stepper { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); }
+  .stepper .dot { width: 24px; height: 24px; border-radius: 50%; background: #9aa0a6; color: #fff; font-size: 12px; display: inline-flex; align-items: center; justify-content: center; }
+  .stepper .on { color: var(--ink); }
+  .stepper .on .dot { background: var(--blue); }
+  .stepper .line { flex: 1; height: 1px; background: #c4c9d1; }
+  .stepper span.s { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+  .title { display: flex; align-items: center; gap: 10px; }
+  .title h1 { margin: 0; font-size: 20px; font-weight: 600; }
+  .subtitle { margin: -8px 0 0; font-size: 14px; font-weight: 500; }
+  .sheet { background: #fff; border-radius: 15px; padding: 18px 22px; display: flex; flex-direction: column; gap: 14px; position: relative; }
+  .sheet-head { display: flex; align-items: center; justify-content: space-between; }
+  .sheet-head h2 { margin: 0; font-size: 16.5px; font-weight: 600; display: flex; align-items: center; gap: 8px; }
+  .pill-btn { background: #fff; border-radius: 24px; padding: 4px; filter: drop-shadow(0 2px 4px rgba(0,0,0,.08)); }
+  .pill-btn span { display: inline-flex; align-items: center; gap: 8px; height: 36px; padding: 0 14px; border-radius: 20px; font-size: 14px; font-weight: 600; color: var(--text); }
+
+  /* Shared bits */
+  .adv { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+  .adv-name { font-size: 17px; font-weight: 600; color: var(--text); }
+  .tag { height: 22px; padding: 0 8px; border-radius: 6px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; }
+  .tag.neutral { background: #eef1f5; color: #3d4652; }
+  .tag.unvetted { background: #fdf0e2; color: #a85300; }
+  .tag.vetted { background: #f1ebfd; color: #6136b8; }
+  .score { display: inline-flex; align-items: baseline; gap: 4px; }
+  .score i { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 2px; transform: translateY(-2px); }
+  .score b { font-size: 20px; font-weight: 600; }
+  .score small { font-size: 12px; color: var(--faint); }
+  .card { background: #fff; border: 1px solid var(--line-soft); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; }
+  .card-h { display: flex; align-items: center; justify-content: space-between; font-weight: 600; font-size: 15px; gap: 8px; }
+  .card-h .va { font-size: 13px; font-weight: 500; color: var(--muted); display: inline-flex; align-items: center; gap: 2px; }
+  .card p { margin: 0; font-size: 13.5px; line-height: 21px; color: var(--text); }
+  .job { display: grid; grid-template-columns: 20px 34px 1fr auto; gap: 10px; align-items: center; padding: 7px 0; border-top: 1px solid var(--line-soft); font-size: 13px; }
+  .job:first-of-type { border-top: 0; }
+  .job .ini { width: 30px; height: 30px; border-radius: 6px; background: var(--blue-soft); color: var(--blue); font-size: 11px; font-weight: 600; display: flex; align-items: center; justify-content: center; }
+  .job b { display: block; font-weight: 600; font-size: 13.5px; color: var(--ink); }
+  .job span { color: var(--muted); }
+  .job .d { color: var(--muted); white-space: nowrap; }
+  .cb { width: 16px; height: 16px; border: 2px solid #8b8d98; border-radius: 3px; display: block; position: relative; flex-shrink: 0; }
+  .cb.on { background: var(--blue); border-color: var(--blue); }
+  .cb.on::after { content: ""; position: absolute; left: 3px; top: 0; width: 5px; height: 9px; border: solid #fff; border-width: 0 2px 2px 0; transform: rotate(45deg); }
+  .qa { font-size: 13px; line-height: 20px; color: var(--text); display: grid; grid-template-columns: 20px 1fr; gap: 8px; }
+  .qa b { font-weight: 600; }
+  .editor { border: 1px solid #d6dbe3; border-radius: 10px; display: flex; flex-direction: column; overflow: hidden; background: #fff; }
+  .ed-bar { height: 46px; border-bottom: 1px solid var(--line); display: flex; align-items: center; gap: 4px; padding: 0 10px; color: #3d4652; }
+  .ed-bar .sep { width: 1px; height: 22px; background: var(--line); margin: 0 6px; }
+  .ed-bar .end { margin-left: auto; font-size: 12px; font-weight: 600; color: var(--blue); text-decoration: underline; }
+  .ed-bar .tb { display: inline-flex; align-items: center; padding: 3px 4px; border-radius: 8px; }
+  .ed-bar .tb.active { background: var(--blue-soft); color: var(--blue); }
+  .ed-body { flex: 1; padding: 14px 18px; font-size: 16px; line-height: 26px; color: #000; font-weight: 500; }
+  .ed-body.empty { color: rgba(0, 0, 0, 0.35); font-weight: 400; font-size: 15px; }
+  .ed-body ul { margin: 10px 0 0; padding-left: 24px; }
+  .u { text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 4px; }
+  .u.g { text-decoration-color: var(--green); }
+  .u.o { text-decoration-color: var(--orange); background: rgba(254, 128, 15, 0.08); }
+  .iconbtn { height: 34px; padding: 0 6px; border-radius: 8px; display: inline-flex; align-items: center; color: var(--muted); }
+  .menu { position: absolute; background: #fff; border-radius: 10px; box-shadow: 0 12px 32px rgba(16, 24, 40, 0.18); padding: 6px 0; width: 300px; z-index: 6; }
+  .menu .hd { font-size: 12px; font-weight: 600; color: var(--muted); padding: 8px 16px 4px; }
+  .menu .it { display: flex; align-items: center; gap: 12px; padding: 8px 16px; font-size: 14px; }
+  .menu .it.hl { background: #f3f8fd; }
+  .menu .rd { width: 16px; height: 16px; border: 2px solid #8b8d98; border-radius: 50%; flex-shrink: 0; }
+  .menu .ai { width: 18px; height: 18px; }
+  .menu .div { height: 1px; background: var(--line); margin: 6px 0; }
+
+  /* Recommendation reasoning (Option A) */
+  .reason .card-h { color: var(--ink); }
+  /* Pitch quality panel (Option B) - mirrors the app's QualityPanel */
+  .pitch-body { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 14px; }
+  .quality { border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; background: #fff; }
+  .quality h4 { margin: 0; font-size: 14px; font-weight: 600; color: var(--text); display: flex; justify-content: space-between; align-items: center; }
+  .quality .sum { margin: 0; font-size: 12px; font-weight: 600; color: #000; }
+  .quality .big { display: flex; align-items: baseline; gap: 4px; }
+  .quality .big b { font-size: 24px; font-weight: 600; }
+  .quality .big span { font-size: 12px; color: #adadad; font-weight: 500; }
+  .qbar { position: relative; height: 6px; border-radius: 3px; background: linear-gradient(90deg, #c41e2f, #fe800f 55%, #149c4d); }
+  .qbar i { position: absolute; top: -4px; left: 79%; width: 3px; height: 14px; border-radius: 2px; background: #1c2024; }
+  .qrow { display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--muted); }
+  .qrow span { display: inline-flex; align-items: center; gap: 6px; }
+  .qrow .dt { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+  .qrow b { font-weight: 600; }
+  .issue { border-left: 3px solid var(--orange); padding: 2px 0 2px 8px; font-size: 12px; line-height: 17px; color: var(--text); }
+  .issue b { display: block; font-weight: 600; color: var(--ink); }
+
+  /* AI menu (Option B): prompt, length setting, quick actions */
+  .ai-menu { width: 360px; padding: 14px 0 6px; }
+  .ai-menu .ai-head { display: flex; align-items: center; gap: 8px; padding: 0 16px 10px; font-size: 14px; font-weight: 600; }
+  .ai-menu .prompt { margin: 0 16px; height: 44px; border: 1px solid #c4c9d1; border-radius: 8px; display: flex; align-items: center; justify-content: space-between; padding: 0 6px 0 12px; font-size: 13.5px; color: var(--ink); }
+  .ai-menu .prompt .send { width: 30px; height: 30px; border-radius: 6px; background: var(--blue); color: #fff; display: inline-flex; align-items: center; justify-content: center; }
+  .ai-menu .prompt .send .ms { font-size: 18px; }
+  .ai-menu .len { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px 6px; font-size: 13px; color: var(--muted); font-weight: 600; }
+  .seg { display: inline-flex; padding: 3px; border: 1px solid var(--line); border-radius: 8px; gap: 3px; }
+  .seg span { height: 28px; padding: 0 14px; border-radius: 6px; display: inline-flex; align-items: center; font-size: 13px; font-weight: 600; color: var(--muted); }
+  .seg span.on { background: var(--blue-soft); color: var(--ink); box-shadow: inset 0 0 0 1px #c4c9d1; }
+  .ai-menu .it .ms { font-size: 18px; color: var(--muted); }
+
+  /* Option A: fixed split inside the page */
+  .a-tools { display: flex; align-items: center; gap: 10px; }
+  .select { height: 40px; width: 300px; border: 1px solid #c4c9d1; border-radius: 6px; display: flex; align-items: center; justify-content: space-between; padding: 0 10px 0 14px; color: var(--muted); font-size: 14px; }
+  .select.open { border-color: var(--blue); box-shadow: inset 0 0 0 1px var(--blue); }
+  .split { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; height: 470px; }
+  .panel { background: var(--panel); border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 12px; overflow: hidden; }
+
+  /* Option B: editor-first pitch cards + drawer */
+  .pitch { border: 2px solid var(--blue); border-radius: 14px; padding: 16px 20px; display: flex; flex-direction: column; gap: 12px; }
+  .pitch.view { border: 1px solid var(--line); }
+  .pitch-top { display: flex; align-items: flex-start; justify-content: space-between; }
+  .pitch-actions { display: flex; align-items: center; gap: 14px; color: rgba(0,0,0,.64); }
+  .pitch-actions .sep { width: 1px; height: 22px; background: var(--line); }
+  .scrim { position: absolute; inset: 0; background: rgba(16, 22, 31, 0.4); z-index: 4; }
+  .drawer { position: absolute; top: 64px; right: 0; bottom: 0; width: 560px; background: #fff; z-index: 5; display: flex; flex-direction: column; border-left: 1px solid var(--line); box-shadow: -16px 0 40px rgba(16, 24, 40, 0.14); }
+  .dr-head { display: flex; align-items: center; justify-content: space-between; padding: 18px 22px 10px; }
+  .dr-head h3 { margin: 0; font-size: 18px; font-weight: 600; display: flex; align-items: center; gap: 10px; }
+  .dr-chips { display: flex; align-items: center; gap: 8px; padding: 0 22px; }
+  .chip { height: 30px; padding: 0 12px; border-radius: 15px; background: #e6f6f2; color: #0d7a5f; font-size: 13px; font-weight: 500; display: inline-flex; align-items: center; }
+  .okdot { width: 24px; height: 24px; border-radius: 50%; background: #149c84; color: #fff; display: inline-flex; align-items: center; justify-content: center; }
+  .okdot .ms { font-size: 16px; }
+  .tabs { display: flex; gap: 24px; padding: 14px 22px 0; border-bottom: 1px solid var(--line); font-size: 15px; font-weight: 600; }
+  .tabs span { display: inline-flex; align-items: center; gap: 8px; padding-bottom: 10px; color: var(--ink); }
+  .tabs span.on { color: var(--blue); border-bottom: 2px solid var(--blue); }
+  .dr-body { flex: 1; padding: 14px 22px; display: flex; flex-direction: column; gap: 12px; overflow: hidden; }
+  .dr-foot { border-top: 1px solid var(--line); padding: 14px 22px 18px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 -4px 12px rgba(0,0,0,.06); background: #fff; }
+  .dr-foot .row1 { display: flex; justify-content: space-between; font-size: 13px; font-weight: 600; }
+  .dr-foot .row1 u { color: var(--muted); }
+  .dr-foot .field { height: 54px; border: 1px solid #c4c9d1; border-radius: 6px; padding: 10px 12px; font-size: 13px; }
+  .dr-foot .btns { display: flex; justify-content: flex-end; gap: 8px; }
+
+  /* Neutral concept frames, like the original test board: near-black CTAs, no accent colours.
+     Confidence underlines use line style instead of colour. */
+  .frame {
+    --blue: #1c2024; --blue-soft: #eceef1; --green: #b5bac1; --orange: #1c2024;
+    filter: grayscale(1);
+  }
+  .frame .btn.outlined { border-color: #9aa0a6; color: var(--ink); }
+  .frame .u.g { text-decoration-color: #b5bac1; }
+  .frame .u.o { text-decoration-style: dashed; text-decoration-color: #1c2024; background: rgba(0, 0, 0, 0.05); }
+  .frame .issue { border-left-color: #1c2024; }
+  .frame .qbar { background: linear-gradient(90deg, #d5d8dc, #6b7078); }
+  .frame .ed-bar .end { color: var(--ink); }
+</style>
+</head>
+<body>
+<div class="board" id="board"></div>
+<script>
+  const AI = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIHZpZXdCb3g9IjAgMCAxOCAxOCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPG1hc2sgaWQ9Im1hc2swXzcyNzRfMTMzNDAzIiBzdHlsZT0ibWFzay10eXBlOmFscGhhIiBtYXNrVW5pdHM9InVzZXJTcGFjZU9uVXNlIiB4PSIwIiB5PSIwIiB3aWR0aD0iMTgiIGhlaWdodD0iMTgiPgo8cmVjdCB3aWR0aD0iMTgiIGhlaWdodD0iMTgiIGZpbGw9IiNEOUQ5RDkiLz4KPC9tYXNrPgo8ZyBtYXNrPSJ1cmwoI21hc2swXzcyNzRfMTMzNDAzKSI+CjxwYXRoIGQ9Ik05IC0xQzkgNC41MjI4NSA0LjUyMjg0IDkgLTEgOUM0LjUyMjg0IDkgOSAxMy40NzcxIDkgMTlDOSAxMy40NzcxIDEzLjQ3NzIgOSAxOSA5QzEzLjQ3NzIgOSA5IDQuNTIyODUgOSAtMVoiIGZpbGw9InVybCgjcGFpbnQwX2xpbmVhcl83Mjc0XzEzMzQwMykiLz4KPC9nPgo8ZGVmcz4KPGxpbmVhckdyYWRpZW50IGlkPSJwYWludDBfbGluZWFyXzcyNzRfMTMzNDAzIiB4MT0iOSIgeTE9Ii0xIiB4Mj0iOSIgeTI9IjE5IiBncmFkaWVudFVuaXRzPSJ1c2VyU3BhY2VPblVzZSI+CjxzdG9wIG9mZnNldD0iMC4yNCIgc3RvcC1jb2xvcj0iIzMzOUJFRiIvPgo8c3RvcCBvZmZzZXQ9IjAuNTYyNSIgc3RvcC1jb2xvcj0iIzhEOThGRiIvPgo8c3RvcCBvZmZzZXQ9IjEiIHN0b3AtY29sb3I9IiNEM0JCRkYiLz4KPC9saW5lYXJHcmFkaWVudD4KPC9kZWZzPgo8L3N2Zz4K';
+  const ms = (name, extra = '') => `<span class="ms" ${extra}>${name}</span>`;
+
+  const shell = (inner) => `
+    <div class="nav">
+      <div class="nav-left">
+        <span class="logo">Guidepoint<i></i></span>
+        <span>Request: #1085069</span><span>&bull;</span><span>AI Pitch Builder</span>
+      </div>
+      <div class="nav-right">
+        <span class="btn contained">Next: Review &amp; Send</span>
+        <span class="divider"></span>
+        ${ms('close')}
+      </div>
+    </div>
+    <div class="page">
+      <div class="stepper">
+        <span class="s on"><span class="dot">1</span>Pitch Curation</span><span class="line"></span>
+        <span class="s"><span class="dot">2</span>Compose Email</span><span class="line"></span>
+        <span class="s"><span class="dot">3</span>Send To Client</span>
+      </div>
+      <div class="title">${ms('arrow_back', 'style="color:#5c5c5c"')}<h1>Review these AI drafts</h1></div>
+      <p class="subtitle">Fix anything flagged, then continue to the email.</p>
+      ${inner}
+    </div>`;
+
+  const advisorRow = `
+    <div class="adv">
+      <span class="adv-name">Dr. Péter Schneider</span>
+      <span class="tag neutral">Biosimilars</span>
+      <span class="tag unvetted">Unvetted</span>
+    </div>`;
+  const scoreRow = (n) => `<span class="score"><i style="background:#fe800f"></i><b>${n}</b><small>/100 Quality</small></span>`;
+
+  const bio = (check) => `<div class="card"><div class="card-h"><span style="display:inline-flex;align-items:center;gap:12px">${check ? '<i class="cb"></i>' : ''}Biography</span><span class="va">${ms('unfold_more', 'style="font-size:16px"')} View all</span></div>
+      <p>Péter Schneider is Chief Financial Officer – Hungary at Sandoz Group AG (10/2023 – Present), a global company specializing in generics and biosimilars. Previously General Manager at Humvo Magyarország (07/2022 – 10/2023).</p></div>`;
+
+  const jobs = (selected) => `<div class="card"><div class="card-h"><span>Job History</span><span class="va">${ms('unfold_more', 'style="font-size:16px"')} View all</span></div>
+      ${[['SG', 'Sandoz Group AG', 'Chief Financial Officer - Hungary', '10/2023 - Present'], ['HM', 'Humvo Magyarország', 'General Manager', '07/2022 - 10/2023'], ['NN', 'Novo Nordisk A/S', 'Finance Director / Business Partner', '08/2009 - 07/2022']]
+        .map(([i, c, r, d], k) => `<div class="job"><i class="cb ${k < selected ? 'on' : ''}"></i><span class="ini">${i}</span><span><b>${c}</b><span>${r}</span></span><span class="d">${d}</span></div>`).join('')}
+    </div>`;
+
+  const reasoningCard = `<div class="card reason"><div class="card-h"><span style="display:inline-flex;align-items:center;gap:8px">${ms('lightbulb', 'style="font-size:18px"')}Recommendation Reasoning</span><span class="va">Why this advisor fits</span></div>
+      <p>Strong fit for the biosimilars angle: runs finance for a generics leader and spent 13 years at Novo Nordisk. Past screener answers cover pen formats by geography.</p></div>`;
+
+  const qualityPanel = `<div class="quality">
+      <h4>Pitch Quality ${ms('close', 'style="font-size:18px;color:#5c5c5c"')}</h4>
+      <div class="big"><b>79</b><span>/100</span></div>
+      <div class="qbar"><i></i></div>
+      <p class="sum">Fair quality, with a bit of room for improvement.</p>
+      <div class="qrow"><span><i class="dt" style="background:#149c4d"></i>High (80%+)</span><b>1 Item</b></div>
+      <div class="qrow"><span><i class="dt" style="background:#fe800f"></i>Medium (60% - 79%)</span><b>2 Items</b></div>
+      <div class="qrow"><span><i class="dt" style="background:#c41e2f"></i>Low (&lt;60%)</span><b>0 Items</b></div>
+      <div class="issue"><b>Vague statement · 76%</b>Can speak to macro-perspective on Kwikpen…</div>
+      <div class="issue"><b>Partially supported · 72%</b>Knowledgeable on generics approaching…</div>
+    </div>`;
+
+  const screeners = `<div class="card"><div class="card-h"><span>Past Screeners</span><span class="va">2 of 3</span></div>
+      <div class="qa"><i class="cb"></i><span><b>Q:</b> Can you discuss which drugs utilize multi-dose pens vs. single-use pens by drug and geography?<br><b>A:</b> Yes, there are wide variations on geographies.</span></div></div>`;
+
+  const draft = `
+    Current: Chief Financial Officer - Hungary at Sandoz Group AG (10/2023 - Present)
+    <ul>
+      <li><span class="u g">Chief Financial Officer – Hungary at Sandoz Group AG</span></li>
+      <li><span class="u o">Can speak to macro-perspective on Kwikpen and multi-dose vs single-use pens by geography</span></li>
+      <li><span class="u o">Knowledgeable on generics approaching the market and API capacity constraints</span></li>
+    </ul>`;
+
+  /* Option A: profile data and an empty editor side by side, bulk dropdown */
+  const optionA = (open) => shell(`
+    <div class="sheet">
+      <div class="a-tools">
+        <span class="select ${open ? 'open' : ''}">Apply bulk information ${ms(open ? 'expand_less' : 'expand_more')}</span>
+        <span class="btn ghost small">${ms('ink_eraser', 'style="font-size:18px"')} Clear all</span>
+        <span class="iconbtn">${ms('translate')}${ms('arrow_drop_down')}</span>
+        <span class="btn contained" style="margin-left:auto">Save &amp; Compose</span>
+      </div>
+      ${advisorRow}
+      <div class="split">
+        <div class="panel">${reasoningCard}${bio(true)}${jobs(1)}</div>
+        <div class="editor">
+          <div class="ed-bar">${ms('format_bold')}${ms('format_italic')}${ms('format_underlined')}${ms('link')}</div>
+          <div class="ed-body empty">Select profile data, or apply bulk information to generate a pitch.</div>
+        </div>
+      </div>
+      ${open ? `<div class="menu" style="left:22px;top:66px;padding-bottom:30px">
+        <div class="it hl"><img class="ai" src="${AI}" alt="">Generate pitches</div>
+        <div class="div"></div>
+        <div class="hd">Project screening responses</div>
+        <div class="it"><i class="rd"></i>Key questions &amp; responses</div>
+        <div class="it"><i class="rd"></i>Key responses only</div>
+        <div class="hd">Past screening responses</div>
+        <div class="it"><i class="rd"></i>Past questions &amp; responses</div>
+        <div class="it"><i class="rd"></i>Past responses only</div>
+        <div class="hd">Availability</div>
+        <div class="it"><i class="rd"></i>3 business day availability</div>
+      </div>` : ''}
+    </div>`);
+
+  /* Option B: editor-first pitch cards; profile data lives in a drawer */
+  const optionB = (drawerOpen, menuOpen) => shell(`
+    <div class="sheet">
+      <div class="sheet-head">
+        <h2>${ms('campaign')} 7 advisors · 3 need a look</h2>
+        <span class="pill-btn"><span><img src="${AI}" alt="" width="20" height="20">Edit Prompt</span></span>
+      </div>
+      <div class="pitch">
+        <div class="pitch-top">
+          <div style="display:flex;flex-direction:column;gap:6px">${advisorRow}${scoreRow(79)}</div>
+          <div class="pitch-actions">${ms('ink_eraser')}<span class="sep"></span>${ms('cancel')}${ms('save')}</div>
+        </div>
+        <div class="${drawerOpen ? '' : 'pitch-body'}">
+        <div class="editor">
+          <div class="ed-bar">${ms('format_bold')}${ms('format_italic')}${ms('format_underlined')}${ms('link')}<span class="sep"></span>
+            <span class="tb ${menuOpen ? 'active' : ''}"><img src="${AI}" alt="" width="20" height="20">${ms('arrow_drop_down')}</span>
+            <span class="tb">${ms('format_list_bulleted')}${ms('arrow_drop_down')}</span>
+            <span class="tb">${ms('translate')}${ms('arrow_drop_down')}</span>
+            <span class="end">Show Profile Data</span></div>
+          <div class="ed-body" style="height:${drawerOpen ? 160 : 286}px">${draft}</div>
+        </div>
+        ${drawerOpen ? '' : qualityPanel}
+        </div>
+      </div>
+      <div class="pitch view" style="${drawerOpen ? '' : 'display:none'}">
+        <div class="pitch-top">
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <div class="adv"><span class="adv-name">Kam Tektas</span><span class="tag neutral">2 angles</span><span class="tag vetted">Vetted</span></div>
+            ${scoreRow(71)}
+          </div>
+          <div class="pitch-actions">${ms('edit')}<span class="sep"></span>${ms('delete')}</div>
+        </div>
+      </div>
+      ${menuOpen ? `<div class="menu ai-menu" style="left:172px;top:212px">
+        <div class="ai-head"><img src="${AI}" alt="" width="18" height="18">Rewrite with AI</div>
+        <div class="prompt"><span>Lead with his pen-format expertise</span><span class="send">${ms('arrow_upward')}</span></div>
+        <div class="len"><span>Length</span><span class="seg"><span class="on">Short</span><span>Verbose</span></span></div>
+        <div class="div"></div>
+        <div class="it">${ms('auto_fix_high')}Fix all flagged lines</div>
+        <div class="it">${ms('refresh')}Re-check pitch quality</div>
+      </div>` : ''}
+    </div>`) + (drawerOpen ? `
+    <aside class="drawer">
+      <div class="dr-head"><h3>${ms('account_circle')} Dr. Péter Schneider</h3><span style="display:flex;gap:14px;color:#5c5c5c">${ms('keyboard_arrow_up')}${ms('keyboard_arrow_down')}${ms('close')}</span></div>
+      <div class="dr-chips"><span class="chip">Custom Recruit</span><span class="okdot">${ms('check')}</span></div>
+      <div class="tabs"><span class="on">${ms('badge', 'style="font-size:18px"')} Profile Details</span><span>${ms('quiz', 'style="font-size:18px"')} Past Screeners</span></div>
+      <div class="dr-body">${bio(true)}${jobs(2)}</div>
+      <div class="dr-foot">
+        <div class="row1"><span>2 items selected</span><u>Clear</u></div>
+        <div class="field">Emphasize regional pen-format differences</div>
+        <div class="btns"><span class="btn outlined">Insert As-Is</span><span class="btn contained">Generate Into Pitch</span></div>
+      </div>
+    </aside>` : '');
+
+  const cell = (inner) => `<div class="cell"><div class="frame">${inner}</div></div>`;
+
+  document.getElementById('board').innerHTML = `
+    <div class="label lost"><span class="mark">${ms('close')}</span>Option A <small>&middot; recommendation reasoning, profile data and an empty editor side by side</small></div>
+    <div class="row">${cell(optionA(false))}${cell(optionA(true))}</div>
+    <div class="label won" style="margin-top:22px"><span class="mark">${ms('check')}</span>Option B <small>&middot; editor first, pitch scoring, AI rewrite prompts, profile data in a drawer</small></div>
+    <div class="row">${cell(optionB(true, false))}${cell(optionB(false, true))}</div>`;
+</script>
+</body>
+</html>

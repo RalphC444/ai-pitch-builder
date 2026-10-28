@@ -43,7 +43,7 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
   // Clear filter and tick Nadia, then send
   console.log('clear', await clickText('Clear Filter'));
   await ev(`document.querySelector('button[aria-label="Select Nadia Okafor"]').click()`); await sleep(200);
-  console.log('send', await ev(`document.querySelector('button[aria-label="Send selected advisors to Pitch Curation"]').click(), 'ok'`)); await sleep(1200);
+  console.log('send', await ev(`document.querySelector('button[aria-label="Send selected advisors to client"]').click(), 'ok'`)); await sleep(1200);
   console.log('curate heading', await ev(`document.querySelector('main h2')?.innerText`), '| has Nadia', await ev(`!!document.querySelector('article[aria-label="Pitch for Nadia Okafor"]')`));
   console.log('nadia pitch', await ev(`document.querySelector('article[aria-label="Pitch for Nadia Okafor"] .pitch-content')?.innerText.slice(0, 200)`));
   await ev(`document.querySelector('article[aria-label="Pitch for Nadia Okafor"]').scrollIntoView({block:'center'})`); await sleep(300);

@@ -24,7 +24,7 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
   await send('Runtime.enable');
   await send('Emulation.setDeviceMetricsOverride', { width: W, height: H, deviceScaleFactor: 1, mobile: W < 640 });
   await send('Page.navigate', { url: 'http://localhost:3000' }); await sleep(1800);
-  await ev(`document.querySelector('button[aria-label="Send selected advisors to Pitch Curation"]').click()`); await sleep(1200);
+  await ev(`document.querySelector('button[aria-label="Send selected advisors to client"]').click()`); await sleep(1200);
   console.log('curate nav ctas:', await ctas());
   await shot('n1-curate');
   await ev(`document.querySelector('#nav-step-actions button').click()`); await sleep(900);

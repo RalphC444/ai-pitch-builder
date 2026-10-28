@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Button from '@mui/material/Button';
-import AddCircleOutlineRoundedIcon from '@mui/icons-material/AddCircleOutlineRounded';
 import { ProfileActionButton } from '../../components/profile/ProfileCard';
 import { Tag } from '../../components/badges/Tag';
 import { AngleTags } from '../../components/badges/AngleTags';
@@ -10,10 +9,10 @@ import { EraseIcon } from '../../components/icons/EraseIcon';
 import { DiscardIcon } from '../../components/icons/DiscardIcon';
 import { SaveIcon } from '../../components/icons/SaveIcon';
 import { TranslationIcon } from '../../components/icons/TranslationIcon';
-import { ChevronIcon } from '../../components/icons/ChevronIcon';
+import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
 import { ToolbarDropdownButton } from '../../components/toolbar/ToolbarDropdownButton';
 import { RichTextEditor, RichTextEditorHandle } from '../../components/editor/RichTextEditor';
-import { Loader } from '../../components/loader';
+import { PitchSkeleton } from '../../components/loader/PitchSkeleton';
 import { useToast } from '../../components/toast';
 import { useMediaQuery, MOBILE_QUERY } from '../../hooks/useMediaQuery';
 import { QualityScoreIndicator } from './PitchQuality';
@@ -184,6 +183,8 @@ export const PitchCardV2: React.FC<PitchCardV2Props> = ({
       setDraftAnalysis(analysis);
       // The "Current:" role line is part of the editable pitch, above the bullets
       setDraftHtml(decorateHtml(withCurrentRoleLine(profile, profile.contentHtml), analysis));
+      // Pitch grading opens with the editor
+      setIsQualityPanelOpen(true);
     } else {
       setActiveIssueId(null);
       setIsQualityPanelOpen(false);
@@ -423,14 +424,15 @@ export const PitchCardV2: React.FC<PitchCardV2Props> = ({
 
   return (
     <article
-      className="bg-white flex flex-col gap-4 p-5 sm:p-8 w-full transition-colors"
+      className={`bg-white flex flex-col gap-4 p-5 sm:p-8 w-full transition-colors ${isLoading ? '' : 'pitch-card-in'}`}
       style={{ border: isEditing ? '2px solid #0068bc' : '1px solid #ebebeb', borderRadius: '16px' }}
       aria-label={`Pitch for ${profile.name}`}
+      aria-busy={isLoading}
     >
-      {header}
+      {!isLoading && header}
 
       {isLoading ? (
-        <Loader lines={4} animated />
+        <PitchSkeleton />
       ) : isEditing ? (
         <>
           <div ref={bodyRef} className="relative flex flex-col lg:flex-row gap-3 w-full">
@@ -448,7 +450,7 @@ export const PitchCardV2: React.FC<PitchCardV2Props> = ({
                   <>
                     <ToolbarDropdownButton
                       icon={<img src={aiSparkleUrl} alt="" width={18} height={18} />}
-                      chevronIcon={<ChevronIcon />}
+                      chevronIcon={<ExpandMoreRoundedIcon fontSize="small" />}
                       aria-label="AI actions"
                       options={[
                         { label: 'Fix all issues with agent', value: 'fix-all', onClick: fixAllWithAgent },
@@ -457,7 +459,7 @@ export const PitchCardV2: React.FC<PitchCardV2Props> = ({
                     />
                     <ToolbarDropdownButton
                       icon={<TranslationIcon />}
-                      chevronIcon={<ChevronIcon />}
+                      chevronIcon={<ExpandMoreRoundedIcon fontSize="small" />}
                       aria-label="Translate"
                       options={TRANSLATE_LANGUAGES.map((language) => ({
                         label: language,
@@ -467,11 +469,11 @@ export const PitchCardV2: React.FC<PitchCardV2Props> = ({
                     />
                   </>
                 }
-                toolbarEnd={!isQualityPanelOpen && (
+                toolbarEnd={
                   <Button onClick={onShowProfileDetails} size="small" sx={{ minHeight: 0, fontSize: 12, whiteSpace: 'nowrap', textDecoration: 'underline' }}>
                     Show Profile Data
                   </Button>
-                )}
+                }
               />
             </div>
             {isQualityPanelOpen && (
@@ -515,16 +517,6 @@ export const PitchCardV2: React.FC<PitchCardV2Props> = ({
             )}
           </div>
 
-          {isQualityPanelOpen && (
-            <Button
-              onClick={onShowProfileDetails}
-              startIcon={<AddCircleOutlineRoundedIcon />}
-              size="small"
-              sx={{ alignSelf: 'flex-start', fontSize: 12 }}
-            >
-              Show Profile Details
-            </Button>
-          )}
         </>
       ) : (
         <div

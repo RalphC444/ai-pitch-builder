@@ -36,7 +36,7 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
   await send('Input.dispatchKeyEvent', { type: 'keyDown', key: 'Escape', code: 'Escape', windowsVirtualKeyCode: 27 }); await sleep(300);
 
   // Pitch Builder
-  await ev(`document.querySelector('button[aria-label="Send selected advisors to Pitch Curation"]').click()`); await sleep(1500);
+  await ev(`document.querySelector('button[aria-label="Send selected advisors to client"]').click()`); await sleep(1500);
   await hideFab(); await ev(`window.scrollTo(0,0)`); await sleep(300);
   await shot('03-pitch-builder');
 

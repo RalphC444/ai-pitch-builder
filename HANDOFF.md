@@ -75,14 +75,14 @@ npx eslint --ext .ts,.tsx src         # 0 errors; ~15 old warnings in legacy fil
   - The header line reads "25 advisors · 7 selected". Filter and sort show as chips only when active.
 - **Nav buttons** (`ExpressActions.tsx`): an **Actions ▾** menu and **Send (n)**.
   - Actions contains Add advisors, then Apply to request page, Add qualifier, and Assign angle 1–3.
-  - Send moves the selected advisors into the Pitch Builder.
+  - **Send to Client (n)** ("Send (n)" on phones) is one action that starts the client send. It drafts the pitches and opens the Pitch Builder, and the toast reads "Drafting pitches for n advisors". It replaced a "Send To Client ▾" dropdown from the original Figma and the ambiguous "Send".
 - **Detail card** (`AdvisorDetailCard.tsx`): clicking a row opens it. ↑ / ↓ / Esc navigate.
 - **Status icons** (`QualifiedStatusChips.tsx`): tinted squares without borders.
 - **Agentic PM** (`AgenticPM.tsx`): a natural-language chat that applies filters. It is **hidden** (`AGENTIC_PM_ENABLED = false`).
 
 **Pitch Curation, step 1** (`src/experiences/v2/`)
 - **Page** (`PitchCurationV2.tsx`):
-  - Pitches draft automatically. The initial loader lasts 500ms.
+  - Pitches draft automatically. The user explicitly does **not** want a Generate button. Loading starts when advisors arrive from the Express List (`startPitchLoading` in `App.tsx`): each card shows a mini skeleton (`src/components/loader/PitchSkeleton.tsx`, a name bar, tag pill and three lines, modelled on the 'AI goes to work' frame of the deck film). The first pitch lands at 500ms, the rest follow about 90ms apart with a short fade, and the header reads "Drafting pitches…" until they're all in. Regenerating after an Edit Prompt change uses the same skeleton.
   - An **Edit Prompt** button in the pitches header opens `PromptDrawer` (`src/components/prompt/PromptDrawer.tsx`), with one prompt template and key details per angle.
   - Saving the prompt regenerates the pitches, and the app asks before replacing pitches someone has edited.
   - The nav button is **Next: Review & Send** ("Next" on phones).
@@ -100,7 +100,7 @@ npx eslint --ext .ts,.tsx src         # 0 errors; ~15 old warnings in legacy fil
   - Prompted rewrites replace the current options (only the latest set shows).
   - After Apply, a one-line **"✓ Rewrite applied · Undo · Next issue · ✕"** bar docks in the editor's bottom-left corner, clear of the text.
 - **Profile drawer** (`src/components/drawer/ProfileDrawer.tsx` + `GenerateFromProfileBar.tsx`): select profile items, add an optional prompt, then **Generate Into Pitch** (Add to Pitch / Replace Bullets / Discard / Regenerate) or **Insert As-Is**.
-- **Analysis logic** (`src/data/pitchAnalysis.ts`): rule-based scoring, issue types, suggestions and a word-level diff, with an OpenRouter call and offline fallback.
+- **Analysis logic** (`src/data/pitchAnalysis.ts`): rule-based scoring, issue types, suggestions and a word-level diff, with an OpenRouter call and offline fallback. Vetted advisors get a per-statement confidence bonus (+8) and unvetted a small penalty (-6), so vetted pitches typically score higher (demo data averages ~86 vetted vs ~78 unvetted); it's a tendency, not a hard rule, so a strong unvetted pitch can still score well.
 - **Prompt data** (`src/data/anglePrompts.ts`): angle prompts and the fallback pitch generator.
 
 **Compose Email, step 2** (`src/experiences/composer/EmailComposer.tsx`)
@@ -117,7 +117,7 @@ npx eslint --ext .ts,.tsx src         # 0 errors; ~15 old warnings in legacy fil
   - **Specify Recipients** is collapsed to the Thread field (with a "+ New thread" option) and a "Show all fields" toggle.
   - **Introduction** editor.
   - **Advisor pitches**, read-only. The pencil goes back to step 1.
-  - **Content Blocks** (`ContentBlocks.tsx`, `src/data/contentBlocks.ts`) are Notion-style: Text / Heading / Bulleted list / Callout / Divider. Hover a block for + and ⋮⋮; drag ⋮⋮ to reorder or click it for Turn into / Move / Duplicate / Delete. "/" in an empty block opens the type menu, Enter starts a new block, and Backspace on an empty block deletes it.
+  - **Content blocks**: sections styled like the Introduction, each titled "Content Block" (numbered when there are several) with a rich-text editor and a remove button. A dashed-border **"＋ Add content block"** box adds one and focuses it. They sit between the pitches and the Closing Message, are stored in `draft.blocks` (`src/data/contentBlocks.ts`, type `text`), and render in the preview and email. The earlier Notion-style block editor was replaced at the user's request.
   - **Closing Message** editor (previously "Content Block", then "Footer").
   - The nav buttons are **Preview Email** and **Send Email**, and the back arrow returns to the preview.
 - **Shared email pieces** (`EmailPreviewModal.tsx`): `EmailBody` (intro, advisors with tags, blocks, closing), `EmailHeaderRows`, `EmailBrandHeader`, `EmailBrandFooter`. The modal itself is no longer used.
@@ -162,7 +162,7 @@ npx eslint --ext .ts,.tsx src         # 0 errors; ~15 old warnings in legacy fil
 19. The email preview wraps sooner (600px) and was restyled to the GP-branded Figma. The thread pill was removed and the logo added to the nav (as a stand-in).
 20. Tooltips on the edit actions, and the Clear tooltip carry-over bug fixed.
 21. Companion: a consistent reason pill plus a profile icon button in the same style as the copy button. The applied bar was cleaned up and stopped covering text.
-22. Content blocks in edit mode (Notion-style). "Content Block" became **Closing Message**. Step 2's title is **Compose Email**.
+22. Content blocks in edit mode (first Notion-style, later replaced by Introduction-style sections with a dashed "Add content block" box, see decision 26). "Content Block" became **Closing Message**. Step 2's title is **Compose Email**.
 23. "Back to Pitch Builder" became **Back To Project**. The divider between the logo and the request number was removed.
 24. Copy pass: each line now does a different job.
     - Stepper labels stay **Pitch Curation / Compose Email / Send To Client**. Shorter labels were tried and reverted, because the connector lines got too long.
@@ -173,6 +173,9 @@ npx eslint --ext .ts,.tsx src         # 0 errors; ~15 old warnings in legacy fil
     - Short names: GLP-1 Formers, Packaging & Elastomers, Biosimilars.
     - An advisor with several angles shows a single "2 angles" tag. Hovering any angle tag lists each angle by number and full name.
     - Demo data: Dr. Matyas Lakatos also covers Angle 1, and Kam Tektas also covers Angle 2. `angles[0]` stays the primary angle, which drives the prompt.
+26. Content blocks simplified: each one is an Introduction-style section titled "Content Block", added from a dashed-border "＋ Add content block" box. The Notion-style editor (`ContentBlocks.tsx`) was deleted.
+27. The Express List button became **Send to Client (n)** ("Send (n)" on phones), one action.
+28. Every dropdown uses the rounded `ExpandMoreRounded` chevron: the MUI selects get it through `theme.ts` (`MuiSelect.defaultProps.IconComponent`), and the toolbar dropdowns, Actions and the recipients toggle use it directly. The recipients toggle sits at the right edge at every width, reading "Show all fields ⌄" closed and "Hide fields ⌃" open, with the To/Subject summary shown while closed. Redeployed to GitHub Pages on 2026-10-25 (bundle `main.7b8603bc.js`). The portfolio case study's "Try the app" banner links there.
 
 ---
 
@@ -181,7 +184,7 @@ npx eslint --ext .ts,.tsx src         # 0 errors; ~15 old warnings in legacy fil
 | Artifact | URL | Local source |
 |---|---|---|
 | Agentic / human-in-the-loop story (1–10 scale) | https://claude.ai/artifact/85Nt2cv1WY89vj23hA3oeq | `docs/handoff/artifacts/agentic-story.html` |
-| Case study revision plan (with screenshots) | https://claude.ai/artifact/XLsx4aSoDcdd8TkLAYCUL4 | `docs/handoff/artifacts/case-study/index.html` + `shots/` |
+| Case study revision plan (with screenshots, plus the redesigned basic-vs-fast-path section with copyable React + CSS at `#fast-path`) | https://claude.ai/artifact/XLsx4aSoDcdd8TkLAYCUL4 | `docs/handoff/artifacts/case-study/index.html` + `shots/` |
 | Companion card ideation board | https://claude.ai/artifact/V5we6bdefis4hCtYq4o8vT | `docs/handoff/artifacts/ai-companion-cleanup.html` |
 
 To update one from a new session, pass its URL as `url` to the Artifact tool. Read it first; the tool refuses a publish to an artifact the session hasn't read. The case study page publishes its 14 screenshots as `files` under `shots/`.
@@ -222,7 +225,7 @@ To update one from a new session, pass its URL as `url` to the Artifact tool. Re
 **UX risks I raised (not fixed unless noted)**
 1. Send is one click away in the pinned nav, with no checks and no undo. My suggestion: an undo window or a pre-send check.
 2. Clicking Next while a pitch is still being edited discards the unsaved draft without warning. Confirmed in code.
-3. The Express List "Send" moves advisors to the builder but reads like emailing the client. My suggestion: "Build Pitches (7)".
+3. The Express List button was renamed **Send to Client**, so it now names where the advisors are going. Resolved.
 4. Unvetted disclosure: the email now shows Vetted/Unvetted tags on each advisor, which partly addresses this.
 5. "Hi Claire" is hard-coded, so the greeting doesn't follow the recipients. The preview also doesn't flag low-quality pitches.
 6. Label mismatches: resolved by the copy pass (decision 24).
@@ -257,6 +260,8 @@ To update one from a new session, pass its URL as `url` to the Artifact tool. Re
   - New thesis: "The model drafts and shows its work. The PM judges faster."
   - Don't claim numbers for v2; measure edits per pitch, accept rate, undo rate, and time from shortlist to send.
   - The user said not to worry about blurring advisor names.
+  - **Basic vs fast path section:** redesigned into a shared start, two 4-step lanes and a shared end, with copyable React + CSS. It's in the case study plan at `#fast-path`.
+  - **Usability test image (`/ai-summ-UT.png`):** redrawn in the current UI with the same Option A (lost) / Option B (won) structure. Files: `docs/handoff/artifacts/case-study/shots/15-ut-concepts.png` (3868×2580, same size as the original); source in `docs/handoff/artifacts/ut-concepts-source.html`. It's in the case study plan at `#ut-concepts`.
 
 ---
 

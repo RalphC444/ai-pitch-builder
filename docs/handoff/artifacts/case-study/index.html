@@ -144,6 +144,72 @@
     .chapter-head { padding: 20px; }
     .lede { font-size: 19px; }
   }
+
+  /* Fast path section preview: dark like the portfolio's case-study pages in both themes */
+  .fp-stage { background: #0e0e0e; border: 1px solid #262626; border-radius: 14px; padding: clamp(20px, 4vw, 48px); overflow: hidden; color-scheme: dark; }
+  .fp-frame { margin: 0 auto; max-width: 100%; transition: max-width 300ms ease; }
+  .fp-frame.is-phone { max-width: 358px; }
+  @media (prefers-reduced-motion: reduce) { .fp-frame { transition: none; } }
+  .fp-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; }
+  .fp-toggle { display: inline-flex; padding: 3px; border: 1px solid var(--line); border-radius: 8px; gap: 3px; background: var(--paper); }
+  .fp-toggle button { font: inherit; font-size: 13px; font-weight: 600; color: var(--muted); background: transparent; border: 0; border-radius: 6px; padding: 6px 12px; cursor: pointer; }
+  .fp-toggle button[aria-pressed="true"] { background: var(--blue-soft); color: var(--blue); }
+  .fp-toggle button:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+  .fp-codes { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(460px, 100%), 1fr)); gap: 16px; }
+  .fp-codes > * { min-width: 0; display: flex; flex-direction: column; gap: 8px; }
+  .fp-code-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+  .fp-codes pre { margin: 0; max-height: 380px; overflow: auto; background: #0e0e0e; border: 1px solid #262626; border-radius: 10px; padding: 16px; font-family: var(--mono); font-size: 12.5px; line-height: 1.6; color: #d6d6d6; }
+  .fp-copy { font: inherit; font-size: 12px; font-weight: 600; background: var(--paper); color: var(--muted); border: 1px solid var(--line); border-radius: 8px; padding: 5px 10px; cursor: pointer; }
+  .fp-copy:hover { color: var(--blue); border-color: var(--blue); }
+  .fp-why { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 12px; }
+  .fp-why div { background: var(--paper); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; font-size: 14px; color: var(--muted); }
+  .fp-why strong { display: block; color: var(--ink); margin-bottom: 2px; }
+</style>
+<style id="fp-section-style">
+/* Path comparison - responds to its own width (container query), so text never squeezes */
+.pc {
+  container-type: inline-size;
+  font-family: var(--font-sans, "Satoshi", system-ui, sans-serif);
+  color: #fff;
+  --pc-line: var(--cs-line, #262626);
+  --pc-dim: var(--cs-dim, #8a8a8a);
+  --pc-accent: var(--cs-accent, #f5cb5c);
+  --pc-eyebrow: var(--cs-eyebrow, #8b9dff);
+}
+.pc-eyebrow { margin: 0 0 1rem; font-size: .875rem; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--pc-eyebrow); }
+.pc-title { margin: 0 0 .9rem; font-size: clamp(1.6rem, 3vw, 2.25rem); line-height: 1.15; font-weight: 700; letter-spacing: -.02em; text-wrap: balance; max-width: 40rem; }
+.pc-lede { margin: 0 0 1.75rem; font-size: 1rem; line-height: 1.65; color: var(--pc-dim); max-width: 40rem; }
+
+.pc-shared { margin: 0; font-size: .9375rem; color: var(--pc-dim); }
+.pc-shared b { color: #fff; font-weight: 600; }
+
+.pc-lanes { display: grid; gap: 1px; background: var(--pc-line); border-radius: 12px; overflow: hidden; margin: 1rem 0; }
+.pc-lane { background: #121212; padding: 1.35rem 1.5rem; display: grid; gap: 1rem; }
+.pc-lane-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: .4rem .75rem; }
+.pc-lane-name { font-size: 1.0625rem; font-weight: 700; }
+.pc-lane-sub { font-size: .8125rem; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--pc-dim); }
+.pc-lane-flag { margin-left: auto; font-size: .8125rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--pc-accent); }
+
+.pc-steps { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .75rem; counter-reset: pc-step; }
+.pc-step { counter-increment: pc-step; border: 1px solid var(--pc-line); border-radius: 9px; padding: .9rem 1rem; display: grid; gap: .3rem; align-content: start; min-width: 0; }
+.pc-step::before { content: counter(pc-step); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .75rem; color: var(--pc-dim); }
+.pc-step strong { font-size: 1rem; font-weight: 600; line-height: 1.3; }
+.pc-step span { font-size: .875rem; line-height: 1.45; color: var(--pc-dim); }
+.pc-step.is-key { border-color: var(--pc-accent); background: rgba(245, 203, 92, .06); }
+.pc-step.is-key strong { color: var(--pc-accent); }
+.pc-step.is-faded strong { color: var(--pc-dim); }
+
+.pc-takeaway { margin: 1.75rem 0 0; font-size: 1.0625rem; line-height: 1.6; max-width: 44rem; }
+.pc-takeaway b { color: var(--pc-accent); font-weight: 600; }
+
+/* Narrow: each lane becomes full-width rows (number, step, note) */
+@container (max-width: 720px) {
+  .pc-lane { padding: 1.1rem 1.1rem; }
+  .pc-steps { grid-template-columns: 1fr; gap: .5rem; }
+  .pc-step { grid-template-columns: 1.25rem minmax(0, 1fr); column-gap: .6rem; padding: .75rem .9rem; }
+  .pc-step::before { grid-row: span 2; padding-top: .2rem; }
+  .pc-lane-flag { margin-left: 0; flex-basis: 100%; }
+}
 </style>
 
 <div class="page">
@@ -192,8 +258,8 @@
           <tr><td class="n">03</td><td class="sec">Problem · “Competitors answered in 15 minutes”</td><td><span class="pill keep">Keep</span></td><td>Still the reason the work exists.</td></tr>
           <tr><td class="n">04</td><td class="sec">How might we</td><td><span class="pill revise">Revise</span></td><td>Keep the first HMW. Add a second one for chapter 2: “How might we make a draft trustworthy enough that PMs stop rereading every line?”</td></tr>
           <tr><td class="n">05</td><td class="sec">Discovery · 10 PMs, seven styles</td><td><span class="pill keep">Keep</span></td><td>It sets up the per-angle prompt editor later (one house style the PMs control).</td></tr>
-          <tr><td class="n">06</td><td class="sec">Basic path vs fast path</td><td><span class="pill revise">Revise</span></td><td>Add one line: the fast path now starts in the Express List, where the shortlist is picked and sent to the builder.</td></tr>
-          <tr><td class="n">07</td><td class="sec">Usability testing · Option A vs B</td><td><span class="pill keep">Keep</span></td><td>Keep as history. Chapter 2 must answer the “auto-generate on load was killed” finding (see contradictions).</td></tr>
+          <tr><td class="n">06</td><td class="sec">Basic path vs fast path</td><td><span class="pill replace">Replace</span></td><td>Swap the two nine-step lists for the <a href="#fast-path">redesigned section</a>: shared steps collapsed, four steps per path, the two-steps-sooner difference highlighted. Code included.</td></tr>
+          <tr><td class="n">07</td><td class="sec">Usability testing · Option A vs B</td><td><span class="pill replace">Replace image</span></td><td>Keep the story; swap the image for the <a href="#ut-concepts">redrawn concepts</a> in today’s UI, and add the PM feedback that pitch scoring was more useful than recommendation reasoning. Frame it as feedback, not as something the A/B test compared: the original B showed reasoning, and scoring came later. Chapter 2 must still answer the “auto-generate on load was killed” finding (see contradictions).</td></tr>
           <tr><td class="n">08</td><td class="sec">Model workshop · “confident and wrong”</td><td><span class="pill revise">Revise</span></td><td>End it with a bridge: “Showing the reasoning became the brief for the next version.” This is the hinge of the whole story.</td></tr>
           <tr><td class="n">09</td><td class="sec">What shipped to beta · four changes</td><td><span class="pill keep">Keep</span></td><td>Rename “What shipped to beta (v1)”. Images stay as the shipped UI.</td></tr>
           <tr><td class="n">10</td><td class="sec">“An hour down to less than ten minutes.”</td><td><span class="pill keep">Keep</span></td><td>This is the v1 result. It closes chapter 1.</td></tr>
@@ -202,6 +268,100 @@
           <tr><td class="n">13</td><td class="sec">Closing · “The model drafts, the PM judges”</td><td><span class="pill revise">Revise</span></td><td>Use the proposed thesis above, and say what you'll measure next.</td></tr>
         </tbody>
       </table>
+    </div>
+  </section>
+
+
+  <section class="section" id="fast-path" aria-labelledby="fast-path-title">
+    <div class="col stack">
+      <span class="eyebrow">Redesigned section · replaces row 06</span>
+      <h2 id="fast-path-title">Basic path vs fast path, rebuilt to make one point</h2>
+      <p class="story">The old version listed nine steps twice, in narrow columns. Steps one to four and the final consult are the same on both paths, so the reader had to compare two lists of tiny text to find the difference. This version shows only what changes: when the client first sees an advisor.</p>
+    </div>
+    <div class="fp-why">
+      <div><strong>Shared steps collapsed</strong>Client, brief, Project Manager and search are one line above. Consult is one line below.</div>
+      <div><strong>Four steps per path, not nine</strong>Each step is a short label and one plain sentence.</div>
+      <div><strong>The difference is highlighted</strong>"Client sees" is step 3 on the basic path and step 1 on the fast path: two steps sooner.</div>
+      <div><strong>No squeezed text</strong>Below 720px of section width, steps stack as full-width rows. In testing, no line went under 200px.</div>
+    </div>
+    <div class="fp-head">
+      <span class="eyebrow">Live preview</span>
+      <div class="fp-toggle" role="group" aria-label="Preview width">
+        <button type="button" data-width="desktop" aria-pressed="true">Desktop</button>
+        <button type="button" data-width="phone" aria-pressed="false">Phone</button>
+      </div>
+    </div>
+    <div class="fp-stage">
+      <div class="fp-frame" id="fp-frame">
+        <section class="pc" aria-labelledby="pc-title">
+          <p class="pc-eyebrow">Two ways to the client</p>
+          <h2 class="pc-title" id="pc-title">The fast path skips screening. The pitch has to make up for it.</h2>
+          <p class="pc-lede">Both paths start the same way and end in a consult. The difference is when the client first sees an advisor.</p>
+
+          <p class="pc-shared"><b>Both start:</b> client brief → Project Manager → finds advisors</p>
+
+          <div class="pc-lanes">
+            <div class="pc-lane">
+              <div class="pc-lane-head">
+                <span class="pc-lane-name">Vetted</span>
+                <span class="pc-lane-sub">Basic path</span>
+              </div>
+              <ol class="pc-steps">
+                <li class="pc-step"><strong>Screeners sent</strong><span>Project questions go out first.</span></li>
+                <li class="pc-step"><strong>Advisors answer</strong><span>Fresh, project-specific answers.</span></li>
+                <li class="pc-step is-key"><strong>Client sees the list</strong><span>Every advisor already screened.</span></li>
+                <li class="pc-step"><strong>Client picks</strong><span>From a screened shortlist.</span></li>
+              </ol>
+            </div>
+            <div class="pc-lane">
+              <div class="pc-lane-head">
+                <span class="pc-lane-name">Unvetted</span>
+                <span class="pc-lane-sub">Fast path</span>
+                <span class="pc-lane-flag">Client sees advisors 2 steps sooner</span>
+              </div>
+              <ol class="pc-steps">
+                <li class="pc-step is-key"><strong>Client sees the advisor</strong><span>Right away. This is the time saved.</span></li>
+                <li class="pc-step"><strong>Client picks</strong><span>On past answers and the profile.</span></li>
+                <li class="pc-step is-faded"><strong>Screeners sent</strong><span>Afterwards, if at all.</span></li>
+                <li class="pc-step"><strong>Advisor opts in</strong><span>To a project they already won.</span></li>
+              </ol>
+            </div>
+          </div>
+
+          <p class="pc-shared"><b>Both end:</b> consult</p>
+
+          <p class="pc-takeaway"><b>On the fast path, the pitch is the whole argument.</b> It has past screener answers and a profile, nothing project-specific. That is where the model struggled most, and why it became the case worth solving.</p>
+        </section>
+              </div>
+    </div>
+    <div class="fp-codes" aria-label="Code for the portfolio site">
+      <div><div class="fp-code-head"><span class="eyebrow">React (JSX)</span><button class="fp-copy" type="button" data-copy="jsx">Copy</button></div><pre id="jsx"></pre></div>
+      <div><div class="fp-code-head"><span class="eyebrow">CSS</span><button class="fp-copy" type="button" data-copy="css">Copy</button></div><pre id="css"></pre></div>
+    </div>
+    <p class="note col">The CSS uses your site's <code>--cs-line</code>, <code>--cs-dim</code>, <code>--cs-accent</code>, <code>--cs-eyebrow</code> and <code>--font-sans</code> variables, with fallbacks to the same values. On your site it renders in Satoshi.</p>
+  </section>
+
+
+  <section class="section" id="ut-concepts" aria-labelledby="ut-title">
+    <div class="col stack">
+      <span class="eyebrow">Redrawn image · replaces /ai-summ-UT.png</span>
+      <h2 id="ut-title">The tested concepts, redrawn in the released UI</h2>
+      <p class="story">Same test, same two ideas, same outcome. Both concepts are full pages in the released shell. A explains each advisor with recommendation reasoning beside an empty editor. B leads with the drafted pitch, scores it, and keeps profile data in a drawer on top of the page. The frames are neutral, like the original board, so the layouts carry the comparison.</p>
+    </div>
+    <figure><a href="shots/15-ut-concepts.png" target="_blank" rel="noopener"><img src="shots/15-ut-concepts.png" alt="Option A (lost): recommendation reasoning and profile data beside an empty editor, with an Apply bulk information menu. Option B (won): a drafted pitch with a quality score and confidence underlines, profile data in a drawer on top of the page, and an AI rewrite menu with a prompt and a Short / Verbose length setting." loading="lazy"></a><figcaption><span>Option A: recommendation reasoning beside an empty editor. Option B: a drafted, scored pitch, AI rewrite prompts, profile data in a drawer.</span><span class="mono">ai-summ-UT-v2.png · 3868×2580</span></figcaption></figure>
+    <div class="grid2">
+      <article class="card">
+        <h3>What stayed the same</h3>
+        <p class="story" style="font-size:16px">The two ideas you tested. A shows profile data and an empty editor side by side, with a bulk dropdown and Save &amp; Compose. B puts the pitch editor first and moves profile data out of the way. Each option is shown twice, as in the original.</p>
+      </article>
+      <article class="card">
+        <h3>What changed</h3>
+        <p class="story" style="font-size:16px">No modal: both are full pages with the released nav, stepper and title. B uses the released drawer, shows a drafted pitch with its score, and opens the AI menu: a rewrite prompt plus a Short / Verbose length setting. The frames are neutral, with no blue buttons or accent colours.</p>
+      </article>
+      <article class="card">
+        <h3>What PMs said: scoring beat reasoning</h3>
+        <p class="story" style="font-size:16px">Recommendation reasoning told PMs why an advisor fit, but they still reread every line before sending. A score on each pitch and an underline on each weak statement told them where to look. So the redraw shows B with pitch scoring where the tested concept had reasoning. The A/B result itself (editor first wins) is unchanged.</p>
+      </article>
     </div>
   </section>
 
@@ -367,7 +527,7 @@
           <tr><td class="mono">/AI-mock.mp4 (hero)</td><td><span class="pill replace">Replace</span></td><td>20–30s recording: Express List → drafted pitches → fix one flag → email preview → sent. Frames 01, 03, 05, 09, 13.</td></tr>
           <tr><td class="mono">/ex-summ.png</td><td><span class="pill keep">Keep</span></td><td>The “before”.</td></tr>
           <tr><td class="mono">/summaryscale.png</td><td><span class="pill keep">Keep</span></td><td>Discovery artifact.</td></tr>
-          <tr><td class="mono">/ai-summ-UT.png</td><td><span class="pill keep">Keep</span></td><td>Testing history.</td></tr>
+          <tr><td class="mono">/ai-summ-UT.png</td><td><span class="pill replace">Replace</span></td><td>ai-summ-UT-v2.png: the same Option A / B concepts, redrawn in the released UI (<a href="#ut-concepts">preview</a>).</td></tr>
           <tr><td class="mono">/ai-layout.png</td><td><span class="pill keep">Keep in v1</span></td><td>Chapter 2 adds 04-edit-scoring.jpg.</td></tr>
           <tr><td class="mono">/ai-toolbar.mp4</td><td><span class="pill keep">Keep in v1</span></td><td>Chapter 2 adds 01-express-list.jpg and 02-express-detail.jpg.</td></tr>
           <tr><td class="mono">/ai-rewrite.mp4</td><td><span class="pill keep">Keep in v1</span></td><td>Chapter 2 adds a clip of 05 → 06: open flag, read sources, Apply, Undo.</td></tr>
@@ -423,6 +583,75 @@
       } catch (error) {
         const range = document.createRange();
         range.selectNodeContents(block);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        button.textContent = 'Selected';
+      }
+      setTimeout(() => { button.textContent = 'Copy'; }, 1600);
+    });
+  });
+
+  // Fast path section: width toggle, code blocks, copy
+  const fpFrame = document.getElementById('fp-frame');
+  document.querySelectorAll('.fp-toggle button').forEach((button) => {
+    button.addEventListener('click', () => {
+      document.querySelectorAll('.fp-toggle button').forEach((b) => b.setAttribute('aria-pressed', String(b === button)));
+      fpFrame.classList.toggle('is-phone', button.dataset.width === 'phone');
+    });
+  });
+  document.getElementById('css').textContent = document.getElementById('fp-section-style').textContent.trim();
+  // JSX version of the same markup
+  const steps = (items) => items.map(([title, note, cls]) =>
+    `        <li className="pc-step${cls ? ' ' + cls : ''}"><strong>${title}</strong><span>${note}</span></li>`).join('\n');
+  document.getElementById('jsx').textContent = `export function PathCompare() {
+  return (
+    <section className="pc" aria-labelledby="pc-title">
+      <p className="pc-eyebrow">Two ways to the client</p>
+      <h2 className="pc-title" id="pc-title">The fast path skips screening. The pitch has to make up for it.</h2>
+      <p className="pc-lede">Both paths start the same way and end in a consult. The difference is when the client first sees an advisor.</p>
+
+      <p className="pc-shared"><b>Both start:</b> client brief → Project Manager → finds advisors</p>
+
+      <div className="pc-lanes">
+        <div className="pc-lane">
+          <div className="pc-lane-head">
+            <span className="pc-lane-name">Vetted</span>
+            <span className="pc-lane-sub">Basic path</span>
+          </div>
+          <ol className="pc-steps">
+${steps([['Screeners sent', 'Project questions go out first.'], ['Advisors answer', 'Fresh, project-specific answers.'], ['Client sees the list', 'Every advisor already screened.', 'is-key'], ['Client picks', 'From a screened shortlist.']]).replace(/^ {8}/gm, '            ')}
+          </ol>
+        </div>
+        <div className="pc-lane">
+          <div className="pc-lane-head">
+            <span className="pc-lane-name">Unvetted</span>
+            <span className="pc-lane-sub">Fast path</span>
+            <span className="pc-lane-flag">Client sees advisors 2 steps sooner</span>
+          </div>
+          <ol className="pc-steps">
+${steps([['Client sees the advisor', 'Right away. This is the time saved.', 'is-key'], ['Client picks', 'On past answers and the profile.'], ['Screeners sent', 'Afterwards, if at all.', 'is-faded'], ['Advisor opts in', 'To a project they already won.']]).replace(/^ {8}/gm, '            ')}
+          </ol>
+        </div>
+      </div>
+
+      <p className="pc-shared"><b>Both end:</b> consult</p>
+
+      <p className="pc-takeaway"><b>On the fast path, the pitch is the whole argument.</b> It has past screener answers and a profile, nothing project-specific. That is where the model struggled most, and why it became the case worth solving.</p>
+    </section>
+  );
+}`;
+
+
+  document.querySelectorAll('.fp-copy').forEach((button) => {
+    button.addEventListener('click', async () => {
+      const pre = document.getElementById(button.dataset.copy);
+      try {
+        await navigator.clipboard.writeText(pre.textContent);
+        button.textContent = 'Copied';
+      } catch (error) {
+        const range = document.createRange();
+        range.selectNodeContents(pre);
         const selection = window.getSelection();
         selection.removeAllRanges();
         selection.addRange(range);

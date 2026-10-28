@@ -165,6 +165,47 @@ const answerToStatement = (answer: string): string => {
   return upperFirst(sentence);
 };
 
+/** A few phrasings per issue type, so a pitch's feedback doesn't repeat one sentence */
+const ISSUE_MESSAGES: Record<IssueKind, (name: string) => string[]> = {
+  confidential: () => [
+    'References confidential information - rephrase to stay within MNPI policy.',
+    'Reads like non-public information - keep it to what the advisor can share.',
+    'Could imply access to confidential data - soften it or remove it.',
+  ],
+  unsupported: (name) => [
+    `Isn't clearly supported by ${name}'s profile or screener answers.`,
+    `Nothing in ${name}'s job history backs this up yet.`,
+    `No screener answer or role from ${name} supports this claim.`,
+  ],
+  vague: () => [
+    'This statement is vague - add specifics from their screener answers.',
+    'Too general to stand out - name a product, market or number.',
+    'Sounds generic - anchor it in something they actually said.',
+  ],
+  'off-angle': () => [
+    'Doesn\'t clearly connect to the angle\'s must-cover topics.',
+    'Good detail, but it drifts from what this angle needs to cover.',
+    'Doesn\'t tie back to the client\'s question for this angle.',
+  ],
+  partial: () => [
+    'Partially supported - tighten it with sourced detail.',
+    'Mostly backed up - one more specific from their screeners would help.',
+    'On the right track - add the timeframe or scope from their profile.',
+  ],
+  supported: () => [
+    'Well supported by the advisor\'s profile and screeners.',
+    'Backed by their job history and screener answers.',
+    'Clear and sourced - ready to send.',
+  ],
+};
+
+/** Same statement, same message: the phrasing is picked from the statement text */
+const issueMessage = (kind: IssueKind, text: string, name: string) => {
+  const options = ISSUE_MESSAGES[kind](name);
+  const hash = text.split('').reduce((total, char) => (total + char.charCodeAt(0)) % 9973, 0);
+  return options[hash % options.length];
+};
+
 /**
  * Score one pitch statement against the advisor's sources and the angle's key details
  */
@@ -184,33 +225,24 @@ const scoreStatement = (text: string, profile: Profile, prompt: AnglePrompt | un
   const relevance = Math.min(1, overlap(words, angleText) * 2.5);
   const isVague = VAGUE_PATTERN.test(text);
   const isConfidential = CONFIDENTIAL_PATTERN.test(text);
+  // Vetted advisors answered project-specific screeners, so their claims are better
+  // grounded; unvetted rely on past screeners and profile alone, so confidence runs lower.
+  const vettingBonus = profile.status === 'vetted' ? 8 : -6;
 
   const confidence = Math.round(clamp(
-    48 + support * 36 + relevance * 14 - (isVague ? 14 : 0) - (isConfidential ? 30 : 0),
+    48 + support * 36 + relevance * 14 + vettingBonus - (isVague ? 14 : 0) - (isConfidential ? 30 : 0),
     32,
     97,
   ));
 
-  let message = 'Well supported by the advisor\'s profile and screeners.';
   let kind: IssueKind = 'supported';
-  if (isConfidential) {
-    message = 'References confidential information - rephrase to stay within MNPI policy.';
-    kind = 'confidential';
-  } else if (support < 0.5) {
-    message = `Isn't clearly supported by ${profile.name.split(' ').slice(-1)[0]}'s profile or screener answers.`;
-    kind = 'unsupported';
-  } else if (isVague) {
-    message = 'This statement is vague - add specifics from their screener answers.';
-    kind = 'vague';
-  } else if (relevance < 0.3) {
-    message = 'Doesn\'t clearly connect to the angle\'s must-cover topics.';
-    kind = 'off-angle';
-  } else if (confidence < 80) {
-    message = 'Partially supported - tighten it with sourced detail.';
-    kind = 'partial';
-  }
+  if (isConfidential) kind = 'confidential';
+  else if (support < 0.5) kind = 'unsupported';
+  else if (isVague) kind = 'vague';
+  else if (relevance < 0.3) kind = 'off-angle';
+  else if (confidence < 80) kind = 'partial';
 
-  return { confidence, message, kind };
+  return { confidence, message: issueMessage(kind, text, profile.name.split(' ').slice(-1)[0]), kind };
 };
 
 /**

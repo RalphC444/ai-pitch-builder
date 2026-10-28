@@ -18,7 +18,7 @@ const sleep = (ms) => new Promise(r => setTimeout(r, ms));
   await send('Runtime.enable');
   await send('Emulation.setDeviceMetricsOverride', { width: 1440, height: 900, deviceScaleFactor: 1, mobile: false });
   await send('Page.navigate', { url: 'http://localhost:3000' }); await sleep(1800);
-  await ev(`document.querySelector('button[aria-label="Send selected advisors to Pitch Curation"]').click()`); await sleep(1300);
+  await ev(`document.querySelector('button[aria-label="Send selected advisors to client"]').click()`); await sleep(1300);
   console.log('tip Edit:', await hover('button[aria-label="Edit Dr. Péter Schneider"]'));
   console.log('tip Delete:', await hover('button[aria-label="Delete Dr. Péter Schneider"]'));
   await ev(`document.querySelector('button[aria-label="Edit Dr. Péter Schneider"]').scrollIntoView({block: 'center'})`); await sleep(300);

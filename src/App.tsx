@@ -1,9 +1,9 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import ListAltRoundedIcon from '@mui/icons-material/ListAltRounded';
 import './App.css';
 import { Navigation } from './components/navigation/Navigation';
 import { TranslationIcon } from './components/icons/TranslationIcon';
-import { ChevronIcon } from './components/icons/ChevronIcon';
+import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
 import { Modal, ModalActions } from './components/modal';
 import { PromptDrawer, PromptDrawerAngle } from './components/prompt/PromptDrawer';
 import { KebabMenu } from './components/menu/KebabMenu';
@@ -56,7 +56,8 @@ function App() {
 
   const [version, setVersion] = useState<ExperienceVersion>(() => readStorage<ExperienceVersion>('experienceVersion', 'v2'));
   const [step, setStep] = useState<WorkflowStep>('express');
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
+  const loadingTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Shared data across V1, V2 and the composer
   const [profiles, setProfiles] = useState<Profile[]>(createInitialProfiles);
@@ -81,10 +82,14 @@ function App() {
   const [autonomy, setAutonomy] = useState<AutonomyLevel>(() => readStorage<AutonomyLevel>('agentAutonomy', 25));
   const [sentEmail, setSentEmail] = useState<SentEmail | null>(null);
 
-  // Initial loading state - brief pitch loader on app launch
-  useEffect(() => {
-    const timer = setTimeout(() => setIsLoading(false), 500);
-    return () => clearTimeout(timer);
+  // Pitch drafting loader: runs each time advisors arrive in Pitch Curation
+  const startPitchLoading = () => {
+    if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
+    setIsLoading(true);
+    loadingTimerRef.current = setTimeout(() => setIsLoading(false), 500);
+  };
+  useEffect(() => () => {
+    if (loadingTimerRef.current) clearTimeout(loadingTimerRef.current);
   }, []);
 
   useEffect(() => {
@@ -182,8 +187,9 @@ function App() {
       return { ...base, contentHtml: bulletsToHtml(buildFallbackPitch(prompt, { name: base.name, details: base.profileDetails })) };
     });
     setProfiles(nextProfiles);
+    startPitchLoading();
     setStep('curate');
-    showToast(`Sent ${advisors.length} advisor${advisors.length === 1 ? '' : 's'} to Pitch Curation`);
+    showToast(`Drafting pitches for ${advisors.length} advisor${advisors.length === 1 ? '' : 's'}`);
   };
 
   const goToCompose = () => {
@@ -225,7 +231,7 @@ function App() {
           !isV2 && step === 'curate'
             ? {
               icon: <TranslationIcon />,
-              chevronIcon: <ChevronIcon />,
+              chevronIcon: <ExpandMoreRoundedIcon fontSize="small" />,
               options: TRANSLATE_LANGUAGES.map((language) => ({
                 label: language,
                 value: language,

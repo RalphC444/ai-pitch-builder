@@ -566,7 +566,8 @@ code {
 }
 
 .pitch-statement[data-level="high"] {
-  text-decoration-color: #149c4d;
+  /* Muted: high-confidence lines are fine, so the green underline stays subtle */
+  text-decoration-color: rgba(20, 156, 77, 0.2);
 }
 
 .pitch-statement[data-level="medium"] {
@@ -620,22 +621,32 @@ code {
   }
 }
 
-/* Email content blocks (Notion-style): placeholder in empty blocks, gutter always visible on touch */
-.content-block-editable:empty::before,
-.content-block-editable:has(> br:only-child)::before {
-  content: attr(data-placeholder);
-  color: rgba(0, 0, 0, 0.3);
-  pointer-events: none;
+/* Pitch card mini skeleton (Pitch Curation loading state) */
+.pitch-skel {
+  display: block;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #eef0f6 0%, #f6f7fb 50%, #eef0f6 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
 }
 
-.content-block-editable ul {
-  list-style-type: disc;
-  padding-left: 22px;
-  margin: 0;
+.pitch-skel-strong {
+  background: linear-gradient(90deg, #e1e4ee 0%, #eceef5 50%, #e1e4ee 100%);
+  background-size: 200% 100%;
 }
 
-@media (hover: none) {
-  .content-block-gutter {
-    opacity: 1;
-  }
+@media (prefers-reduced-motion: reduce) {
+  .pitch-skel { animation: none; }
+}
+
+/* A drafted pitch fades in as it replaces its skeleton */
+.pitch-card-in { animation: pitch-card-in 260ms ease-out; }
+
+@keyframes pitch-card-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pitch-card-in { animation: none; }
 }

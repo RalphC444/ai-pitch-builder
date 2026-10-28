@@ -1,4 +1,5 @@
 import { createTheme } from '@mui/material/styles';
+import ExpandMoreRoundedIcon from '@mui/icons-material/ExpandMoreRounded';
 
 /**
  * MUI theme built from the Nexus / Unified Email Experience Figma tokens
@@ -20,6 +21,10 @@ export const theme = createTheme({
   },
   shape: { borderRadius: 6 },
   components: {
+    // One dropdown chevron everywhere (selects match the toolbar and menu buttons)
+    MuiSelect: {
+      defaultProps: { IconComponent: ExpandMoreRoundedIcon },
+    },
     MuiButton: {
       defaultProps: { disableElevation: true },
       styleOverrides: {

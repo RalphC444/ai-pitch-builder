@@ -83,13 +83,28 @@ export const PitchCurationV2: React.FC<PitchCurationV2Props> = ({
     return result;
   }, [sortedProfiles, prompts, savedAnalyses]);
 
+  // Drafts land one card at a time once loading finishes (a short stagger after the first)
+  const [revealedCount, setRevealedCount] = useState(isLoading ? 0 : Number.MAX_SAFE_INTEGER);
+  useEffect(() => {
+    if (isLoading) {
+      setRevealedCount(0);
+      return undefined;
+    }
+    if (revealedCount >= sortedProfiles.length) return undefined;
+    const timer = setTimeout(() => setRevealedCount((count) => count + 1), revealedCount === 0 ? 0 : 90);
+    return () => clearTimeout(timer);
+  }, [isLoading, revealedCount, sortedProfiles.length]);
+  const isDrafting = isLoading || revealedCount < sortedProfiles.length;
+
   // Pitches whose score isn't green (same rule as the score dot) - drives the status line
   const needsLookCount = sortedProfiles.filter((profile) => {
     const analysis = analyses[profile.id];
     return analysis && getConfidenceLevel(analysis.score) !== 'high';
   }).length;
   const advisorCount = `${sortedProfiles.length} advisor${sortedProfiles.length === 1 ? '' : 's'}`;
-  const pitchStatus = needsLookCount === 0
+  const pitchStatus = isDrafting
+    ? `${advisorCount} · Drafting pitches…`
+    : needsLookCount === 0
     ? `${advisorCount} · All pitches look good`
     : `${advisorCount} · ${needsLookCount} need${needsLookCount === 1 ? 's' : ''} a look`;
 
@@ -150,14 +165,14 @@ export const PitchCurationV2: React.FC<PitchCurationV2Props> = ({
           </div>
         </div>
 
-        {sortedProfiles.map((profile) => (
+        {sortedProfiles.map((profile, index) => (
           <PitchCardV2
             key={profile.id}
             profile={profile}
             analysis={analyses[profile.id]}
             anglePrompt={prompts[profile.angles[0]?.number]}
             isEditing={editingProfileId === profile.id}
-            isLoading={isLoading || regeneratingIds.has(profile.id)}
+            isLoading={isLoading || index >= revealedCount || regeneratingIds.has(profile.id)}
             onEdit={() => setEditingProfileId(profile.id)}
             onDelete={() => setAdvisorToRemove(profile)}
             onSave={(html, analysis) => handleSave(profile, html, analysis)}
